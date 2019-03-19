@@ -3,6 +3,7 @@
     package="edu.temple.musicgen">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -10,6 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".MusicPlayer"></activity>
         <activity
             android:name=".MainActivity"
             android:label="Log in"
@@ -20,7 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GenerateSong"></activity>
+        <activity android:name=".GenerateSong" />
     </application>
 
 </manifest>

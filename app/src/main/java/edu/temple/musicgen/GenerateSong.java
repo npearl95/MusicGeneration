@@ -141,6 +141,10 @@ public class GenerateSong extends AppCompatActivity {
                         textView.setText(o.toString());
                     }
                 }.execute();
+                //Start New Activity
+                Intent song = new Intent(GenerateSong.this, MusicPlayer.class);
+                startActivity(song);
+
             }
         });
 
