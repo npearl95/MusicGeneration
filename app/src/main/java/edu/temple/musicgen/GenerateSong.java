@@ -15,10 +15,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +32,7 @@ import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -92,43 +96,55 @@ public class GenerateSong extends AppCompatActivity {
         protected void onPreExecute(){}
 
         protected String doInBackground(String... arg0) {
+            //Object
+            JSONObject postDataParams = new JSONObject();
             try {
-                URL url = new URL("http://3.16.26.98:1337");
+                postDataParams.put("genre", "jazz");
+                postDataParams.put("tempo", "slow");
+                postDataParams.put("duration", "medium");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            //Log out the params
+            Log.e("params", postDataParams.toString());
+            //Log out the sending params
+            //Log.e("params to String", getPostDataString(postDataParams));
+
+            try {
+                URL url = new URL("http://3.16.26.98:1337/echo");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 CookieManager cookieManager = new CookieManager();
                 CookieHandler.setDefault(cookieManager);
-
-                //Object
-                JSONObject postDataParams = new JSONObject();
-                postDataParams.put("genre", "Jazz");
-                postDataParams.put("tempo", "Slow");
-                postDataParams.put("duration", "Medium");
-                //Log out the params
-                Log.e("params", postDataParams.toString());
-                //Log out the sending params
-                Log.e("params to String", getPostDataString(postDataParams));
 
                 //Start customize the connection
                 // Set Headers
                 conn.setRequestProperty("CustomHeader", "someValue");
                 conn.setRequestProperty("accept", "application/json");
 
-
                 conn.setReadTimeout(15000 /* milliseconds */);
                 conn.setConnectTimeout(15000 /* milliseconds */);
                 conn.setRequestMethod("POST");
-                conn.setDoInput(true);
+                //conn.setDoInput(true);
                 conn.setDoOutput(true);
-                conn.setChunkedStreamingMode(0);
+                
+                //conn.setChunkedStreamingMode(0);
 
                 OutputStream os = conn.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(
                         new OutputStreamWriter(os, "UTF-8"));
-
+                conn.setFixedLengthStreamingMode(getPostDataString(postDataParams).getBytes().length);
+                conn.setChunkedStreamingMode(0);
                 writer.write(getPostDataString(postDataParams));
                 writer.flush();
                 writer.close();
                 os.close();
+
+
+
+                /*OutputStreamWriter outputStreamWriter = new OutputStreamWriter(conn.getOutputStream());
+                outputStreamWriter.write(getPostDataString(postDataParams));
+                outputStreamWriter.flush();*/
 
                 int responseCode = conn.getResponseCode();
 
@@ -145,6 +161,8 @@ public class GenerateSong extends AppCompatActivity {
 
                     //close the connect
                     conn.disconnect();
+                    Log.e("Return", sb.toString());
+
                     return sb.toString();
                 } else {
                     return new String("false : " + responseCode);

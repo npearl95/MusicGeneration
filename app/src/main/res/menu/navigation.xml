@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_back"
+        android:icon="@drawable/ic_fingerprint_black_24dp"
+        android:title="SignIn" />
+
+    <item
+        android:id="@+id/navigation_usb"
+        android:icon="@drawable/ic_android_black_24dp"
+        android:title="Music" />
+
+    <item
+        android:id="@+id/navigation_logo"
+        android:icon="@drawable/ic_featured_play_list_black_24dp"
+        android:title="Songs" />
+
+</menu>
