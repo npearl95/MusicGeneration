@@ -31,22 +31,16 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import static java.lang.System.in;
-
-public class GenerateSong extends AppCompatActivity {
+public class GenerateSong extends CustomMenuActivity {
 
     //private static final String TAG = "SignInActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_generate_song);
-
 
         Intent myIntent = getIntent();
         // Get user from the previous activity
@@ -69,7 +63,6 @@ public class GenerateSong extends AppCompatActivity {
         durationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDuration.setAdapter(durationAdapter);
 
-
         Button generate_button = findViewById(R.id.generate_button);
         final TextView textView = findViewById(R.id.textView3);
 
@@ -77,11 +70,8 @@ public class GenerateSong extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                //InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                //inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-
+                //Run the API POST request a new song
                 new SendRequest().execute();
-
                 //Start New Activity
                 Intent song = new Intent(GenerateSong.this, MusicPlayer.class);
                 startActivity(song);
@@ -99,13 +89,13 @@ public class GenerateSong extends AppCompatActivity {
             //Object
             JSONObject postDataParams = new JSONObject();
             try {
+
                 postDataParams.put("genre", "jazz");
                 postDataParams.put("tempo", "slow");
                 postDataParams.put("duration", "medium");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
             try {
                 String request        = "http://api.thewimbo.me/generate_song";
                 URL    url            = new URL( request );

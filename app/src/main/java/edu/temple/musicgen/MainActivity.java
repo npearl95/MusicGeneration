@@ -18,7 +18,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-public class MainActivity extends AppCompatActivity implements
+public class MainActivity extends CustomMenuActivity implements
         View.OnClickListener {
 
     private static final String TAG = "SignInActivity";

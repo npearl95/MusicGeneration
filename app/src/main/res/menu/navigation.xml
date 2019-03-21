@@ -2,18 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/navigation_back"
+        android:id="@+id/SignIn"
         android:icon="@drawable/ic_fingerprint_black_24dp"
         android:title="SignIn" />
 
     <item
-        android:id="@+id/navigation_usb"
+        android:id="@+id/Generate"
         android:icon="@drawable/ic_android_black_24dp"
-        android:title="Music" />
+        android:title="Generate" />
 
     <item
-        android:id="@+id/navigation_logo"
+        android:id="@+id/Player"
         android:icon="@drawable/ic_featured_play_list_black_24dp"
-        android:title="Songs" />
+        android:title="Player" />
 
 </menu>

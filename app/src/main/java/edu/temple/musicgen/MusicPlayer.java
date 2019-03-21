@@ -5,12 +5,18 @@ import java.util.concurrent.TimeUnit;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class MusicPlayer extends AppCompatActivity {
+public class MusicPlayer extends CustomMenuActivity {
+
     private MediaPlayer mediaPlayer;
     public TextView songName, duration;
     private double timeElapsed = 0, finalTime = 0;
