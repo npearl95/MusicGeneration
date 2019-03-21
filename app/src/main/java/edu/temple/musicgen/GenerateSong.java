@@ -106,59 +106,32 @@ public class GenerateSong extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            //Log out the params
-            Log.e("params", postDataParams.toString());
-            //Log out the sending params
-            //Log.e("params to String", getPostDataString(postDataParams));
-
             try {
-                URL url = new URL("http://3.16.26.98:1337/echo");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                CookieManager cookieManager = new CookieManager();
-                CookieHandler.setDefault(cookieManager);
-
-                //Start customize the connection
-                // Set Headers
-                conn.setRequestProperty("CustomHeader", "someValue");
-                conn.setRequestProperty("accept", "application/json");
-
-                conn.setReadTimeout(15000 /* milliseconds */);
-                conn.setConnectTimeout(15000 /* milliseconds */);
-                conn.setRequestMethod("POST");
-                //conn.setDoInput(true);
-                conn.setDoOutput(true);
-                
-                //conn.setChunkedStreamingMode(0);
-
+                String request        = "http://api.thewimbo.me/generate_song";
+                URL    url            = new URL( request );
+                HttpURLConnection conn= (HttpURLConnection) url.openConnection();
+                conn.setDoOutput( true );
+                conn.setInstanceFollowRedirects( false );
+                conn.setRequestMethod( "POST" );
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setUseCaches( false );
+                OutputStreamWriter wr= new OutputStreamWriter(conn.getOutputStream());
+                wr.write(postDataParams.toString());
                 OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                conn.setFixedLengthStreamingMode(getPostDataString(postDataParams).getBytes().length);
-                conn.setChunkedStreamingMode(0);
-                writer.write(getPostDataString(postDataParams));
-                writer.flush();
-                writer.close();
+                os.write(postDataParams.toString().getBytes("UTF-8"));
                 os.close();
 
-
-
-                /*OutputStreamWriter outputStreamWriter = new OutputStreamWriter(conn.getOutputStream());
-                outputStreamWriter.write(getPostDataString(postDataParams));
-                outputStreamWriter.flush();*/
-
                 int responseCode = conn.getResponseCode();
-
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
                     // Read response
                     BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
                     StringBuffer sb = new StringBuffer("");
                     String line="";
-
                     while((line = in.readLine()) != null) {
                         sb.append(line);
                     }
                     in.close();
-
                     //close the connect
                     conn.disconnect();
                     Log.e("Return", sb.toString());
@@ -182,31 +155,4 @@ public class GenerateSong extends AppCompatActivity {
 
         }
     }
-    //Convert the params object to a string format: genre=jazz&tempo=slow&duration=medium
-    public String getPostDataString(JSONObject params) throws Exception {
-
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-
-        Iterator<String> itr = params.keys();
-
-        while(itr.hasNext()){
-
-            String key= itr.next();
-            Object value = params.get(key);
-
-            if (first) {
-                first = false;
-            } else
-                result.append("&");
-
-            result.append(URLEncoder.encode(key, "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
-
-        }
-        return result.toString();
-    }
-
-
 }
