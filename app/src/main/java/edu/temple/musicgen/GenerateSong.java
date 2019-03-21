@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -90,28 +92,34 @@ public class GenerateSong extends AppCompatActivity {
         protected void onPreExecute(){}
 
         protected String doInBackground(String... arg0) {
+            try {
+                URL url = new URL("http://3.16.26.98:1337");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                CookieManager cookieManager = new CookieManager();
+                CookieHandler.setDefault(cookieManager);
 
-            try{
-
-                URL url = new URL("http://3.16.26.98:1337/generate_song");
                 //Object
                 JSONObject postDataParams = new JSONObject();
-                postDataParams.put("genre", "jazz");
-                postDataParams.put("tempo", "slow");
-                postDataParams.put("duration","medium");
+                postDataParams.put("genre", "Jazz");
+                postDataParams.put("tempo", "Slow");
+                postDataParams.put("duration", "Medium");
                 //Log out the params
-                Log.e("params",postDataParams.toString());
+                Log.e("params", postDataParams.toString());
                 //Log out the sending params
-                Log.e("params to String",getPostDataString(postDataParams));
-
+                Log.e("params to String", getPostDataString(postDataParams));
 
                 //Start customize the connection
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                // Set Headers
+                conn.setRequestProperty("CustomHeader", "someValue");
+                conn.setRequestProperty("accept", "application/json");
+
+
                 conn.setReadTimeout(15000 /* milliseconds */);
                 conn.setConnectTimeout(15000 /* milliseconds */);
                 conn.setRequestMethod("POST");
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
+                conn.setChunkedStreamingMode(0);
 
                 OutputStream os = conn.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(
@@ -122,61 +130,26 @@ public class GenerateSong extends AppCompatActivity {
                 writer.close();
                 os.close();
 
-                int responseCode=conn.getResponseCode();
+                int responseCode = conn.getResponseCode();
 
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
-
-/*
-                   BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    // Read response
+                    BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
                     StringBuffer sb = new StringBuffer("");
                     String line="";
 
                     while((line = in.readLine()) != null) {
-
                         sb.append(line);
-                        break;
                     }
                     in.close();
-                    return sb.toString();*/
 
-                    //BEGIN TO READ RESPONSE//
-                    BufferedReader reader = null;
-                    String response = null;
-                    InputStream inputStream = conn.getInputStream();
-                    StringBuffer buffer = new StringBuffer();
-                    if (inputStream == null) {
-                        response = null;
-                    }
-
-                    reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        buffer.append(line + "\n");
-                    }
-
-                    if(buffer.length() == 0){
-                        response = buffer.toString();
-                    }
-                    response = buffer.toString();
-
-                    String tmpResponse;
-
-                    tmpResponse = reader.readLine();
-                    while (tmpResponse != null) {
-                        response = response + tmpResponse;
-                        tmpResponse = reader.readLine();
-                    }
-                    reader.close();
-                    return response;
-                    //ENDED READ RESPONSE//
-
+                    //close the connect
+                    conn.disconnect();
+                    return sb.toString();
+                } else {
+                    return new String("false : " + responseCode);
                 }
-                else {
-                    return new String("false : "+responseCode);
-                }
-            }
-            catch(Exception e){
+            }catch(Exception e){
                 return new String("Exception: " + e.getMessage());
             }
         }
