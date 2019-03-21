@@ -13,13 +13,25 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Iterator;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import static java.lang.System.in;
 
 public class GenerateSong extends AppCompatActivity {
 
@@ -29,13 +41,12 @@ public class GenerateSong extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_generate_song);
 
+
         Intent myIntent = getIntent();
-        // Views
+        // Get user from the previous activity
         TextView user_name = findViewById(R.id.user_name);
         String email = myIntent.getStringExtra("email");
         user_name.setText(email);
-
-
         //Spinner Genre
         Spinner spinnergenre = findViewById(R.id.genre_spinner);
         ArrayAdapter<CharSequence> genreAdapter = ArrayAdapter.createFromResource(this, R.array.genre, android.R.layout.simple_spinner_item);
@@ -53,101 +64,158 @@ public class GenerateSong extends AppCompatActivity {
         spinnerDuration.setAdapter(durationAdapter);
 
 
-        Button button = findViewById(R.id.generate_button);
+        Button generate_button = findViewById(R.id.generate_button);
         final TextView textView = findViewById(R.id.textView3);
 
-
-        //Button listener for the generate music
-        button.setOnClickListener(new View.OnClickListener() {
+        generate_button.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 //InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 //inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
-                AsyncTask asyncTask  = new AsyncTask() {
-                    @Override
-                    protected Object doInBackground(Object[] objects) {
-                        URL APIUrl;
-                        BufferedReader reader = null;
-                        HttpURLConnection urlConnection = null;
-                        String response = null;
+                new SendRequest().execute();
 
-                        try {
-
-                            APIUrl = new URL("http://3.16.26.98:1337/generate_song");
-
-                            Log.e("URL", String.valueOf(APIUrl));
-
-                            urlConnection = (HttpURLConnection) APIUrl.openConnection();
-                            urlConnection.setRequestMethod("POST");
-                            //Get not use GET because some are exclusive GET
-                            urlConnection.connect();
-
-                            InputStream inputStream = urlConnection.getInputStream();
-                            StringBuffer buffer = new StringBuffer();
-                            if (inputStream == null) {
-                                response = null;
-                            }
-
-                            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                            String line;
-                            while ((line = reader.readLine()) != null) {
-                                buffer.append(line + "\n");
-                            }
-
-                            if(buffer.length() == 0){
-                                response = buffer.toString();
-                            }
-                            response = buffer.toString();
-
-                            String tmpResponse;
-
-                            tmpResponse = reader.readLine();
-                            while (tmpResponse != null) {
-                                response = response + tmpResponse;
-                                tmpResponse = reader.readLine();
-                            }
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } finally {
-                            if (urlConnection != null){
-                                urlConnection.disconnect();
-                            }
-
-                            if (reader != null){
-                                try {
-                                    reader.close();
-                                } catch (final IOException e){
-                                }
-                            }
-                        }
-
-                        if(response != null) {
-                            Log.e("Response", response);
-                        }else{
-                            Log.e("Response", "No Response");
-                        }
-                        return response;
-
-
-                    }
-
-                    @Override
-                    protected void onPostExecute(Object o) {
-
-                        textView.setText(o.toString());
-                    }
-                }.execute();
                 //Start New Activity
                 Intent song = new Intent(GenerateSong.this, MusicPlayer.class);
                 startActivity(song);
 
             }
         });
-
-
     }
+
+
+    public class SendRequest extends AsyncTask<String, Void, String> {
+
+        protected void onPreExecute(){}
+
+        protected String doInBackground(String... arg0) {
+
+            try{
+
+                URL url = new URL("http://3.16.26.98:1337/generate_song");
+                //Object
+                JSONObject postDataParams = new JSONObject();
+                postDataParams.put("genre", "jazz");
+                postDataParams.put("tempo", "slow");
+                postDataParams.put("duration","medium");
+                //Log out the params
+                Log.e("params",postDataParams.toString());
+                //Log out the sending params
+                Log.e("params to String",getPostDataString(postDataParams));
+
+
+                //Start customize the connection
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000 /* milliseconds */);
+                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+
+                writer.write(getPostDataString(postDataParams));
+                writer.flush();
+                writer.close();
+                os.close();
+
+                int responseCode=conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+
+/*
+                   BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuffer sb = new StringBuffer("");
+                    String line="";
+
+                    while((line = in.readLine()) != null) {
+
+                        sb.append(line);
+                        break;
+                    }
+                    in.close();
+                    return sb.toString();*/
+
+                    //BEGIN TO READ RESPONSE//
+                    BufferedReader reader = null;
+                    String response = null;
+                    InputStream inputStream = conn.getInputStream();
+                    StringBuffer buffer = new StringBuffer();
+                    if (inputStream == null) {
+                        response = null;
+                    }
+
+                    reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line + "\n");
+                    }
+
+                    if(buffer.length() == 0){
+                        response = buffer.toString();
+                    }
+                    response = buffer.toString();
+
+                    String tmpResponse;
+
+                    tmpResponse = reader.readLine();
+                    while (tmpResponse != null) {
+                        response = response + tmpResponse;
+                        tmpResponse = reader.readLine();
+                    }
+                    reader.close();
+                    return response;
+                    //ENDED READ RESPONSE//
+
+                }
+                else {
+                    return new String("false : "+responseCode);
+                }
+            }
+            catch(Exception e){
+                return new String("Exception: " + e.getMessage());
+            }
+        }
+        //Action take after execute
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(getApplicationContext(), result,
+                    Toast.LENGTH_LONG).show();
+            final TextView textView = findViewById(R.id.textView3);
+            textView.setText(result);
+
+
+        }
+    }
+    //Convert the params object to a string format: genre=jazz&tempo=slow&duration=medium
+    public String getPostDataString(JSONObject params) throws Exception {
+
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+
+        Iterator<String> itr = params.keys();
+
+        while(itr.hasNext()){
+
+            String key= itr.next();
+            Object value = params.get(key);
+
+            if (first) {
+                first = false;
+            } else
+                result.append("&");
+
+            result.append(URLEncoder.encode(key, "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
+
+        }
+        return result.toString();
+    }
+
+
 }
