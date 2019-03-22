@@ -2,6 +2,7 @@ package edu.temple.musicgen;
 
 import java.util.concurrent.TimeUnit;
 
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +11,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -23,12 +25,18 @@ public class MusicPlayer extends CustomMenuActivity {
     private int forwardTime = 2000, backwardTime = 2000;
     private Handler durationHandler = new Handler();
     private SeekBar seekbar;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_player);
         //initialize views
         initializeViews();
+        Intent songIntent = getIntent();
+        String songName1 = songIntent.getStringExtra("name");
+        songName.setText(songName1);
+        Log.e("Song's name", songName1);
     }
     public void initializeViews(){
         songName = (TextView) findViewById(R.id.songName);
@@ -36,7 +44,7 @@ public class MusicPlayer extends CustomMenuActivity {
         finalTime = mediaPlayer.getDuration();
         duration = (TextView) findViewById(R.id.songDuration);
         seekbar = (SeekBar) findViewById(R.id.seekBar);
-        songName.setText("Sample_Song.mp3");
+
         seekbar.setMax((int) finalTime);
         seekbar.setClickable(false);
     }

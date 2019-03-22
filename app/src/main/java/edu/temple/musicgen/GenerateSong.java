@@ -31,10 +31,13 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class GenerateSong extends CustomMenuActivity {
+    HashMap<String, String> songMap = new HashMap<>();
 
     //private static final String TAG = "SignInActivity";
     @Override
@@ -72,9 +75,15 @@ public class GenerateSong extends CustomMenuActivity {
             public void onClick(View v) {
                 //Run the API POST request a new song
                 new SendRequest().execute();
+
+                android.os.SystemClock.sleep(19000);
+
                 //Start New Activity
-                Intent song = new Intent(GenerateSong.this, MusicPlayer.class);
-                startActivity(song);
+                Intent songIntent = new Intent(GenerateSong.this, MusicPlayer.class);
+                String songName1 = songMap.get("song_name");
+                songIntent.putExtra("name", songName1);
+                Log.e("Song's name", songName1);
+                startActivity(songIntent);
 
             }
         });
@@ -125,6 +134,8 @@ public class GenerateSong extends CustomMenuActivity {
                     //close the connect
                     conn.disconnect();
                     Log.e("Return", sb.toString());
+                    songMap = jsonToMap(sb.toString());
+
 
                     return sb.toString();
                 } else {
@@ -144,5 +155,25 @@ public class GenerateSong extends CustomMenuActivity {
 
 
         }
+
     }
+    public static HashMap<String, String> jsonToMap(String t) throws JSONException {
+
+        HashMap<String, String> map = new HashMap<String, String>();
+        JSONObject jObject = new JSONObject(t);
+        Iterator<?> keys = jObject.keys();
+
+        while( keys.hasNext() ){
+            String key = (String)keys.next();
+            String value = jObject.getString(key);
+            map.put(key, value);
+
+        }
+
+        System.out.println("json : "+jObject);
+        System.out.println("map : "+map);
+        return map;
+    }
+
+
 }
