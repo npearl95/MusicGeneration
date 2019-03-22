@@ -26,14 +26,17 @@ public class CustomMenuActivity extends AppCompatActivity {
                 case R.id.Player:
                     Player();
                     return true;
+                    default:
+                return super.onOptionsItemSelected(item);
         }
-        return true;
+       //return true;
     }
 
     private void SignIn(){
         //Show the about screen
         Intent myIntent = new Intent(this, MainActivity.class);
         startActivityForResult(myIntent, 0);
+
     }
 
     private void Generate(){

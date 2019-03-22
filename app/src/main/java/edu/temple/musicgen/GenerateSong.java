@@ -1,8 +1,10 @@
 package edu.temple.musicgen;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -17,18 +19,10 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.CookieHandler;
-import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -75,24 +69,17 @@ public class GenerateSong extends CustomMenuActivity {
             public void onClick(View v) {
                 //Run the API POST request a new song
                 new SendRequest().execute();
-
-                android.os.SystemClock.sleep(19000);
-
-                //Start New Activity
-                Intent songIntent = new Intent(GenerateSong.this, MusicPlayer.class);
-                String songName1 = songMap.get("song_name");
-                songIntent.putExtra("name", songName1);
-                Log.e("Song's name", songName1);
-                startActivity(songIntent);
-
             }
         });
     }
 
 
     public class SendRequest extends AsyncTask<String, Void, String> {
-
-        protected void onPreExecute(){}
+        private final ProgressDialog dialog = new ProgressDialog(GenerateSong.this);
+        protected void onPreExecute(){
+            this.dialog.setMessage("Processing...");
+            this.dialog.show();
+        }
 
         protected String doInBackground(String... arg0) {
             //Object
@@ -153,7 +140,19 @@ public class GenerateSong extends CustomMenuActivity {
             final TextView textView = findViewById(R.id.textView3);
             textView.setText(result);
 
-
+            //Transform resul to Map
+            HashMap<String, String> myResultInMap = new HashMap<>();
+            try {
+                myResultInMap = jsonToMap(result);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            //Start New Activity
+            final Intent songIntent = new Intent(GenerateSong.this, MusicPlayer.class);
+            //Add Things to Intent
+            songIntent.putExtra("songName", myResultInMap.get("song_name"));
+            songIntent.putExtra("location", myResultInMap.get("location"));
+            startActivity(songIntent);
         }
 
     }
@@ -162,14 +161,11 @@ public class GenerateSong extends CustomMenuActivity {
         HashMap<String, String> map = new HashMap<String, String>();
         JSONObject jObject = new JSONObject(t);
         Iterator<?> keys = jObject.keys();
-
         while( keys.hasNext() ){
             String key = (String)keys.next();
             String value = jObject.getString(key);
             map.put(key, value);
-
         }
-
         System.out.println("json : "+jObject);
         System.out.println("map : "+map);
         return map;

@@ -1,9 +1,14 @@
 package edu.temple.musicgen;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -27,24 +32,36 @@ public class MusicPlayer extends CustomMenuActivity {
     private SeekBar seekbar;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_player);
+
         //initialize views
         initializeViews();
-        Intent songIntent = getIntent();
-        String songName1 = songIntent.getStringExtra("name");
-        songName.setText(songName1);
-        Log.e("Song's name", songName1);
+
     }
     public void initializeViews(){
         songName = (TextView) findViewById(R.id.songName);
-        mediaPlayer = MediaPlayer.create(this, R.raw.mymusic);
+        //mediaPlayer = MediaPlayer.create(this, R.raw.mymusic);
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        Intent songIntent = getIntent();
+        String songNamefromIntent = songIntent.getStringExtra("songName");
+        songName.setText(songNamefromIntent);
+        String locationfromIntent = songIntent.getStringExtra("location");
+
+        //set Media player
+        try {
+            mediaPlayer.setDataSource(locationfromIntent);
+            mediaPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         finalTime = mediaPlayer.getDuration();
         duration = (TextView) findViewById(R.id.songDuration);
         seekbar = (SeekBar) findViewById(R.id.seekBar);
-
         seekbar.setMax((int) finalTime);
         seekbar.setClickable(false);
     }

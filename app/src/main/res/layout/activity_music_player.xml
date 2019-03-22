@@ -18,7 +18,7 @@
         android:layout_marginEnd="24dp"
         android:layout_marginRight="24dp"
         android:layout_marginBottom="8dp"
-        android:text="@string/genre"
+        android:text="Song Name"
         android:textAlignment="center"
         app:layout_constraintBottom_toTopOf="@+id/mp3Image"
         app:layout_constraintEnd_toEndOf="parent"
