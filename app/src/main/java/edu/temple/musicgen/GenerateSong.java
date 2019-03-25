@@ -32,8 +32,11 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class GenerateSong extends CustomMenuActivity {
     HashMap<String, String> songMap = new HashMap<>();
+    String selectedDuration;
+    String selectedGenre,selectedTempo;
 
-    //private static final String TAG = "SignInActivity";
+
+    private static final String TAG = "GenerateSong";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,20 +52,31 @@ public class GenerateSong extends CustomMenuActivity {
         ArrayAdapter<CharSequence> genreAdapter = ArrayAdapter.createFromResource(this, R.array.genre, android.R.layout.simple_spinner_item);
         genreAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnergenre.setAdapter(genreAdapter);
+
+        selectedGenre = spinnergenre.getSelectedItem().toString();
+        Log.w(TAG, "Genre"+ selectedGenre);
+
+
         //Spinner Tempo
         Spinner spinnerTempo = findViewById(R.id.tempo_spinner);
         ArrayAdapter<CharSequence> tempoAdapter = ArrayAdapter.createFromResource(this, R.array.tempo, android.R.layout.simple_spinner_item);
         tempoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTempo.setAdapter(tempoAdapter);
+
+        selectedTempo = spinnerTempo.getSelectedItem().toString();
+        Log.w(TAG, "Tempo "+ selectedTempo);
+
+
         //Spinner Duration
         Spinner spinnerDuration = findViewById(R.id.duration_spinner);
         ArrayAdapter<CharSequence> durationAdapter = ArrayAdapter.createFromResource(this, R.array.duration, android.R.layout.simple_spinner_item);
         durationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDuration.setAdapter(durationAdapter);
 
-        Button generate_button = findViewById(R.id.generate_button);
-        final TextView textView = findViewById(R.id.textView3);
+        selectedDuration = spinnerDuration.getSelectedItem().toString();
+        Log.w(TAG, "duration"+ selectedDuration);
 
+        Button generate_button = findViewById(R.id.generate_button);
         generate_button.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -86,9 +100,9 @@ public class GenerateSong extends CustomMenuActivity {
             JSONObject postDataParams = new JSONObject();
             try {
 
-                postDataParams.put("genre", "jazz");
-                postDataParams.put("tempo", "slow");
-                postDataParams.put("duration", "medium");
+                postDataParams.put("genre", selectedGenre);
+                postDataParams.put("tempo", selectedTempo);
+                postDataParams.put("duration", selectedDuration);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -122,7 +136,9 @@ public class GenerateSong extends CustomMenuActivity {
                     conn.disconnect();
                     Log.e("Return", sb.toString());
                     songMap = jsonToMap(sb.toString());
-
+                     //Set messasnger
+                    this.dialog.setMessage("Done");
+                    this.dialog.show();
 
                     return sb.toString();
                 } else {
@@ -135,11 +151,12 @@ public class GenerateSong extends CustomMenuActivity {
         //Action take after execute
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(getApplicationContext(), result,
+            dialog.dismiss();
+            /*Toast.makeText(getApplicationContext(), result,
                     Toast.LENGTH_LONG).show();
             final TextView textView = findViewById(R.id.textView3);
             textView.setText(result);
-
+            */
             //Transform resul to Map
             HashMap<String, String> myResultInMap = new HashMap<>();
             try {

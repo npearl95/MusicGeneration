@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MusicGen</string>
+    <string name="app_name">Wimbo</string>
     <string name="title_text">Sign In</string>
 
     <string-array name="genre">

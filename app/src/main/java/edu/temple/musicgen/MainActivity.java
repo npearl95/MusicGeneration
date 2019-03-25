@@ -60,6 +60,8 @@ public class MainActivity extends CustomMenuActivity implements
         // [END customize_button]
 
 
+
+
     }
 
     @Override
@@ -202,4 +204,12 @@ public class MainActivity extends CustomMenuActivity implements
             //break;
         }
     }
+    //Log out from user account when app close but still remember
+    @Override
+    public void onDestroy() {
+        Log.w(TAG, "on Destroy");
+        signOut();
+        super.onDestroy();
+    }
+
 }
