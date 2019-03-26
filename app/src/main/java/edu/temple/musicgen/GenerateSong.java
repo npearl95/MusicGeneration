@@ -1,7 +1,6 @@
 package edu.temple.musicgen;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.SystemClock;
@@ -45,8 +44,9 @@ public class GenerateSong extends CustomMenuActivity {
         Intent myIntent = getIntent();
         // Get user from the previous activity
         TextView user_name = findViewById(R.id.user_name);
+        String user = myIntent.getStringExtra("userName");
         String email = myIntent.getStringExtra("email");
-        user_name.setText(email);
+        user_name.setText(" Hey there, " + user);
         //Spinner Genre
         Spinner spinnergenre = findViewById(R.id.genre_spinner);
         ArrayAdapter<CharSequence> genreAdapter = ArrayAdapter.createFromResource(this, R.array.genre, android.R.layout.simple_spinner_item);
@@ -91,7 +91,7 @@ public class GenerateSong extends CustomMenuActivity {
     public class SendRequest extends AsyncTask<String, Void, String> {
         private final ProgressDialog dialog = new ProgressDialog(GenerateSong.this);
         protected void onPreExecute(){
-            this.dialog.setMessage("Processing...");
+            this.dialog.setMessage("Generating Music...");
             this.dialog.show();
         }
 

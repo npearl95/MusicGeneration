@@ -3,7 +3,6 @@ package edu.temple.musicgen;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +17,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-public class MainActivity extends CustomMenuActivity implements
+public class SignIn extends CustomMenuActivity implements
         View.OnClickListener {
 
     private static final String TAG = "SignInActivity";
@@ -107,8 +106,9 @@ public class MainActivity extends CustomMenuActivity implements
             Log.w(TAG, "First name is"+ name);
             Log.w(TAG, "Account user is"+email);
             //Start GenerateSong Activity
-            Intent sendData = new Intent(MainActivity.this, GenerateSong.class);
+            Intent sendData = new Intent(SignIn.this, GenerateSong.class);
             sendData.putExtra("email", email);
+            sendData.putExtra("userName", name);
             startActivity(sendData);
 
 

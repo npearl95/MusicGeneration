@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 public class MusicPlayer extends CustomMenuActivity {
 
+    final static String TAG ="MusicPlayer";
     private MediaPlayer mediaPlayer;
     public TextView songName, duration;
     private double timeElapsed = 0, finalTime = 0;
@@ -60,6 +61,7 @@ public class MusicPlayer extends CustomMenuActivity {
             e.printStackTrace();
         }
         finalTime = mediaPlayer.getDuration();
+        //Log.w(TAG, "duration "+duration);
         duration = (TextView) findViewById(R.id.songDuration);
         seekbar = (SeekBar) findViewById(R.id.seekBar);
         seekbar.setMax((int) finalTime);

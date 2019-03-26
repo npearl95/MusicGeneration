@@ -34,7 +34,7 @@ public class CustomMenuActivity extends AppCompatActivity {
 
     private void SignIn(){
         //Show the about screen
-        Intent myIntent = new Intent(this, MainActivity.class);
+        Intent myIntent = new Intent(this, SignIn.class);
         startActivityForResult(myIntent, 0);
 
     }

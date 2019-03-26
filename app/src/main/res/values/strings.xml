@@ -6,6 +6,8 @@
         <item>Jazz</item>
         <item>Rock</item>
         <item>Pop</item>
+        <item>Classical</item>
+        <item>Hip Hop</item>
     </string-array>
     <string-array name="tempo">
         <item>Slow</item>
