@@ -33,7 +33,7 @@ public class GenerateSong extends CustomMenuActivity {
     HashMap<String, String> songMap = new HashMap<>();
     String selectedDuration;
     String selectedGenre,selectedTempo;
-
+    String user, email;
 
     private static final String TAG = "GenerateSong";
     @Override
@@ -44,8 +44,8 @@ public class GenerateSong extends CustomMenuActivity {
         Intent myIntent = getIntent();
         // Get user from the previous activity
         TextView user_name = findViewById(R.id.user_name);
-        String user = myIntent.getStringExtra("userName");
-        String email = myIntent.getStringExtra("email");
+        user = myIntent.getStringExtra("userName");
+        email = myIntent.getStringExtra("email");
         user_name.setText(" Hey there, " + user);
         //Spinner Genre
         Spinner spinnergenre = findViewById(R.id.genre_spinner);
@@ -169,6 +169,8 @@ public class GenerateSong extends CustomMenuActivity {
             //Add Things to Intent
             songIntent.putExtra("songName", myResultInMap.get("song_name"));
             songIntent.putExtra("location", myResultInMap.get("location"));
+            songIntent.putExtra("user", user);
+            songIntent.putExtra("email", email);
             startActivity(songIntent);
         }
 

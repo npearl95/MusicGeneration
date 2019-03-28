@@ -90,7 +90,7 @@
             android:id="@+id/media_rew"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="14dp"
+            android:layout_marginLeft="10dp"
             android:onClick="rewind"
             android:src="@android:drawable/ic_media_rew" />
 
@@ -117,6 +117,13 @@
             android:layout_marginLeft="14dp"
             android:onClick="forward"
             android:src="@android:drawable/ic_media_ff" />
+        <ImageButton
+            android:id="@+id/download_song"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="14dp"
+            android:onClick="download"
+            android:src="@drawable/ic_file_download_white_24dp"/>
     </LinearLayout>
 
     <android.support.design.widget.BottomNavigationView

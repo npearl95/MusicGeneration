@@ -99,14 +99,18 @@ public class SignIn extends CustomMenuActivity implements
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
-            // Signed in successfully, show authenticated UI.
-            updateUI(account);
+            String token = account.getIdToken();
+
+
+            //get all information of the account
+
             String name = account.getDisplayName();
             String email = account.getEmail();
             Log.w(TAG, "First name is"+ name);
             Log.w(TAG, "Account user is"+email);
             //Start GenerateSong Activity
             Intent sendData = new Intent(SignIn.this, GenerateSong.class);
+            //Intent: email, userName
             sendData.putExtra("email", email);
             sendData.putExtra("userName", name);
             startActivity(sendData);

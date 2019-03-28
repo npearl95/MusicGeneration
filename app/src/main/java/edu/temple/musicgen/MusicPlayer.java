@@ -5,11 +5,13 @@ import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -18,6 +20,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +34,8 @@ public class MusicPlayer extends CustomMenuActivity {
     private int forwardTime = 2000, backwardTime = 2000;
     private Handler durationHandler = new Handler();
     private SeekBar seekbar;
+    DownloadManager downloadManager;
+    String locationfromIntent, songNamefromIntent;
 
 
 
@@ -49,9 +54,9 @@ public class MusicPlayer extends CustomMenuActivity {
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         Intent songIntent = getIntent();
-        String songNamefromIntent = songIntent.getStringExtra("songName");
+        songNamefromIntent = songIntent.getStringExtra("songName");
         songName.setText(songNamefromIntent);
-        String locationfromIntent = songIntent.getStringExtra("location");
+        locationfromIntent = songIntent.getStringExtra("location");
 
         //set Media player
         try {
@@ -93,6 +98,7 @@ public class MusicPlayer extends CustomMenuActivity {
 
     // pause mp3 song
     public void pause(View view) {
+
         mediaPlayer.pause();
     }
 
@@ -106,4 +112,40 @@ public class MusicPlayer extends CustomMenuActivity {
             mediaPlayer.seekTo((int) timeElapsed);
         }
     }
+    public void rewind(View view){
+        if((timeElapsed - backwardTime)>0){
+            timeElapsed = timeElapsed -backwardTime;
+            mediaPlayer.seekTo((int) timeElapsed);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) mediaPlayer.release();
+    }
+    public long download(View view){
+        long downloadReference;
+        Uri uri = Uri.parse(locationfromIntent);
+        // Create request for android download manager
+        downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+
+        //Setting title of request
+        request.setTitle(songNamefromIntent);
+
+        //Setting description of request
+        request.setDescription("Song from Wimbo Music");
+
+        //Set the local destination for the downloaded file to a path within the application's external files directory
+       // if(view.getId() == R.id.download_song)
+         //   request.setDestinationInExternalFilesDir(MusicPlayer.this, Environment.DIRECTORY_DOWNLOADS,"testout.mp3");
+        //Enqueue download and save into referenceId
+        downloadReference = downloadManager.enqueue(request);
+        Log.w(TAG, "Request process");
+
+        return downloadReference;
+
+    }
+
 }
