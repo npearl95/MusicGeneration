@@ -1,15 +1,24 @@
 package edu.temple.musicgen;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -25,6 +34,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import static edu.temple.musicgen.GenerateSong.jsonToMap;
+
 public class MusicPlayer extends CustomMenuActivity {
 
     final static String TAG ="MusicPlayer";
@@ -35,8 +51,9 @@ public class MusicPlayer extends CustomMenuActivity {
     private Handler durationHandler = new Handler();
     private SeekBar seekbar;
     DownloadManager downloadManager;
-    String locationfromIntent, songNamefromIntent;
-
+    String locationfromIntent, songNamefromIntent, profileID, profileEmail;
+    Intent songIntent;
+    HashMap<String, String> historyMap = new HashMap<>();
 
 
     @Override
@@ -47,16 +64,30 @@ public class MusicPlayer extends CustomMenuActivity {
         //initialize views
         initializeViews();
 
+        Button button = (Button) findViewById(R.id.button);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Log.w(TAG, "Button Clicked");
+                 new SendRequestHistory().execute();
+            }
+        });
+
     }
     public void initializeViews(){
         songName = (TextView) findViewById(R.id.songName);
         //mediaPlayer = MediaPlayer.create(this, R.raw.mymusic);
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        Intent songIntent = getIntent();
+        songIntent = getIntent();
         songNamefromIntent = songIntent.getStringExtra("songName");
         songName.setText(songNamefromIntent);
         locationfromIntent = songIntent.getStringExtra("location");
+        profileID= songIntent.getStringExtra("profileID");
+        profileEmail= songIntent.getStringExtra("profileEmail");
+        Log.w(TAG, profileID);
+        Log.w(TAG, profileEmail);
+
 
         //set Media player
         try {
@@ -136,11 +167,6 @@ public class MusicPlayer extends CustomMenuActivity {
 
         //Setting description of request
         request.setDescription("Song from Wimbo Music");
-
-        //Set the local destination for the downloaded file to a path within the application's external files directory
-       // if(view.getId() == R.id.download_song)
-         //   request.setDestinationInExternalFilesDir(MusicPlayer.this, Environment.DIRECTORY_DOWNLOADS,"testout.mp3");
-        //Enqueue download and save into referenceId
         downloadReference = downloadManager.enqueue(request);
         Log.w(TAG, "Request process");
 
@@ -148,4 +174,58 @@ public class MusicPlayer extends CustomMenuActivity {
 
     }
 
+
+    public class SendRequestHistory extends AsyncTask<String, Void, String> {
+
+        protected String doInBackground(String... arg0) {
+            Log.w(TAG, "SendRequestHistory");
+            //Object
+            JSONObject postDataParams = new JSONObject();
+            try {
+                postDataParams.put("profileID", profileEmail);
+                postDataParams.put("profileEmail", profileEmail);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            try {
+                String request        = "http://api.thewimbo.me/history";
+                URL    url            = new URL( request );
+                HttpURLConnection conn= (HttpURLConnection) url.openConnection();
+                conn.setDoOutput( true );
+                conn.setInstanceFollowRedirects( false );
+                conn.setRequestMethod( "POST" );
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setUseCaches( false );
+                OutputStreamWriter wr= new OutputStreamWriter(conn.getOutputStream());
+                wr.write(postDataParams.toString());
+                OutputStream os = conn.getOutputStream();
+                os.write(postDataParams.toString().getBytes("UTF-8"));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    // Read response
+                    BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuffer sb = new StringBuffer("");
+                    String line="";
+                    while((line = in.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    in.close();
+                    //close the connect
+                    conn.disconnect();
+                    Log.e("Return History", sb.toString());
+                    Log.w(TAG, sb.toString());
+
+                    return sb.toString();
+                } else {
+                    return new String("false : " + responseCode);
+                }
+            }catch(Exception e){
+                return new String("Exception: " + e.getMessage());
+            }
+        }
+
+    }
 }

@@ -33,7 +33,7 @@ public class GenerateSong extends CustomMenuActivity {
     HashMap<String, String> songMap = new HashMap<>();
     String selectedDuration;
     String selectedGenre,selectedTempo;
-    String user, email;
+    String userName, profileID, profileEmail;
 
     private static final String TAG = "GenerateSong";
     @Override
@@ -43,10 +43,15 @@ public class GenerateSong extends CustomMenuActivity {
 
         Intent myIntent = getIntent();
         // Get user from the previous activity
+        //Sign In Intent
+        //profileID: <string of the google profile id>,
+        //profileEmail': <string of the google email>
+        //userName
         TextView user_name = findViewById(R.id.user_name);
-        user = myIntent.getStringExtra("userName");
-        email = myIntent.getStringExtra("email");
-        user_name.setText(" Hey there, " + user);
+        userName = myIntent.getStringExtra("userName");
+        profileEmail = myIntent.getStringExtra("profileEmail");
+        profileID = myIntent.getStringExtra("profileID");
+        user_name.setText(" Hey there, " + userName);
         //Spinner Genre
         Spinner spinnergenre = findViewById(R.id.genre_spinner);
         ArrayAdapter<CharSequence> genreAdapter = ArrayAdapter.createFromResource(this, R.array.genre, android.R.layout.simple_spinner_item);
@@ -103,6 +108,8 @@ public class GenerateSong extends CustomMenuActivity {
                 postDataParams.put("genre", selectedGenre);
                 postDataParams.put("tempo", selectedTempo);
                 postDataParams.put("duration", selectedDuration);
+                postDataParams.put("profileID", profileID);
+                postDataParams.put("profileEmail", profileEmail);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -139,7 +146,7 @@ public class GenerateSong extends CustomMenuActivity {
                      //Set messasnger
                     this.dialog.setMessage("Done");
                     this.dialog.show();
-
+                    Log.w(TAG,sb.toString());
                     return sb.toString();
                 } else {
                     return new String("false : " + responseCode);
@@ -167,10 +174,15 @@ public class GenerateSong extends CustomMenuActivity {
             //Start New Activity
             final Intent songIntent = new Intent(GenerateSong.this, MusicPlayer.class);
             //Add Things to Intent
+            //GenerateSong Intent
+            //profileID: <string of the google profile id>,
+            //profileEmail': <string of the google email>
+            //songName
+            //location
             songIntent.putExtra("songName", myResultInMap.get("song_name"));
             songIntent.putExtra("location", myResultInMap.get("location"));
-            songIntent.putExtra("user", user);
-            songIntent.putExtra("email", email);
+            songIntent.putExtra("profileEmail", profileEmail);
+            songIntent.putExtra("profileID", profileID);
             startActivity(songIntent);
         }
 
@@ -185,8 +197,8 @@ public class GenerateSong extends CustomMenuActivity {
             String value = jObject.getString(key);
             map.put(key, value);
         }
-        System.out.println("json : "+jObject);
-        System.out.println("map : "+map);
+       // System.out.println("json : "+jObject);
+       // System.out.println("map : "+map);
         return map;
     }
 

@@ -17,6 +17,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+
 public class SignIn extends CustomMenuActivity implements
         View.OnClickListener {
 
@@ -42,6 +43,7 @@ public class SignIn extends CustomMenuActivity implements
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.server_client_id))
                 .requestEmail()
                 .build();
         // [END configure_signin]
@@ -90,29 +92,38 @@ public class SignIn extends CustomMenuActivity implements
             handleSignInResult(task);
 
         }
+
+
     }
     // [END onActivityResult]
 
     // [START handleSignInResult]
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
-        Log.w(TAG, "Handle SignIn Result");
+
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
-            String token = account.getIdToken();
+            String profileID = account.getIdToken();
+            Log.w(TAG, "Profile ID is"+ profileID);
 
 
-            //get all information of the account
+            //Sign In Intent
+            //profileID: <string of the google profile id>,
+            //profileEmail': <string of the google email>
+            //userName
 
             String name = account.getDisplayName();
-            String email = account.getEmail();
+            String profileEmail = account.getEmail();
+
             Log.w(TAG, "First name is"+ name);
-            Log.w(TAG, "Account user is"+email);
             //Start GenerateSong Activity
             Intent sendData = new Intent(SignIn.this, GenerateSong.class);
             //Intent: email, userName
-            sendData.putExtra("email", email);
+            sendData.putExtra("profileEmail", profileEmail);
             sendData.putExtra("userName", name);
+            sendData.putExtra("profileID", profileID);
+            Log.w(TAG, "Profile Email is"+ profileEmail);
+
             startActivity(sendData);
 
 
@@ -124,6 +135,7 @@ public class SignIn extends CustomMenuActivity implements
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
             updateUI(null);
         }
+
     }
     // [END handleSignInResult]
 
