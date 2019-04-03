@@ -177,12 +177,16 @@ public class MusicPlayer extends CustomMenuActivity {
 
     public class SendRequestHistory extends AsyncTask<String, Void, String> {
 
+
+        protected void onPreExecute(){
+
+        }
+
         protected String doInBackground(String... arg0) {
-            Log.w(TAG, "SendRequestHistory");
             //Object
             JSONObject postDataParams = new JSONObject();
             try {
-                postDataParams.put("profileID", profileEmail);
+                postDataParams.put("profileID", profileID);
                 postDataParams.put("profileEmail", profileEmail);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -215,9 +219,9 @@ public class MusicPlayer extends CustomMenuActivity {
                     in.close();
                     //close the connect
                     conn.disconnect();
-                    Log.e("Return History", sb.toString());
-                    Log.w(TAG, sb.toString());
-
+                    Log.e("Return", sb.toString());
+                    //Set messasnger
+                    Log.w(TAG,sb.toString());
                     return sb.toString();
                 } else {
                     return new String("false : " + responseCode);
@@ -225,6 +229,10 @@ public class MusicPlayer extends CustomMenuActivity {
             }catch(Exception e){
                 return new String("Exception: " + e.getMessage());
             }
+        }
+        //Action take after execute
+        @Override
+        protected void onPostExecute(String result) {
         }
 
     }

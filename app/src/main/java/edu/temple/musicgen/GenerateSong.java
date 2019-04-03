@@ -159,11 +159,6 @@ public class GenerateSong extends CustomMenuActivity {
         @Override
         protected void onPostExecute(String result) {
             dialog.dismiss();
-            /*Toast.makeText(getApplicationContext(), result,
-                    Toast.LENGTH_LONG).show();
-            final TextView textView = findViewById(R.id.textView3);
-            textView.setText(result);
-            */
             //Transform resul to Map
             HashMap<String, String> myResultInMap = new HashMap<>();
             try {
