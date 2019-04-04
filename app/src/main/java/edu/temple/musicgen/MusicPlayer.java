@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import android.app.ActionBar;
 import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -21,10 +23,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -170,6 +177,31 @@ public class MusicPlayer extends CustomMenuActivity {
             mediaPlayer.seekTo((int) timeElapsed);
         }
     }
+    public  void editname(View view) {
+        Button closePopupBtn;
+        final PopupWindow popupWindow;
+        //instantiate the popup.xml layout file
+        LayoutInflater layoutInflater = (LayoutInflater) MusicPlayer.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View customView = layoutInflater.inflate(R.layout.popup, null);
+
+        closePopupBtn = (Button) customView.findViewById(R.id.closePopupBtn);
+
+        //instantiate popup window
+        popupWindow = new PopupWindow(customView, ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+
+        //display the popup window
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+        Log.e(TAG,"CLOSE BUTTON about to clicked");
+        popupWindow.setOutsideTouchable(true);
+        //close the popup window on button click
+        closePopupBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupWindow.dismiss();
+                Log.e(TAG,"CLOSE BUTTON CLICKED");
+            }
+        });
+    }
 
     @Override
     public void onDestroy() {
@@ -267,6 +299,7 @@ public class MusicPlayer extends CustomMenuActivity {
                                 songInfo.put("song_id", songid);
                                 songInfo.put("song_name", songname);
                                 songInfo.put("location", songlocation);
+
                                 // adding contact to contact list
                                 historyList.add(songInfo);
                             }
