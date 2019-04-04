@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import android.app.DownloadManager;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SeekBar;
@@ -46,8 +48,8 @@ public class MusicPlayer extends CustomMenuActivity {
     DownloadManager downloadManager;
     String locationfromIntent, songNamefromIntent, profileID, profileEmail;
     Intent songIntent;
-    HashMap<String, String> historyMap = new HashMap<>();
     private ListView lv;
+    String currentPlayinglocation, currentPlayingSong;
 
     ArrayList<HashMap<String, String>> historyList;
 
@@ -59,6 +61,10 @@ public class MusicPlayer extends CustomMenuActivity {
 
         //initialize views
         initializeViews();
+        historyList = new ArrayList<>();
+        lv = (ListView) findViewById(R.id.listView);
+        new SendRequestHistory().execute();
+
 
 
     }
@@ -71,12 +77,13 @@ public class MusicPlayer extends CustomMenuActivity {
         songNamefromIntent = songIntent.getStringExtra("songName");
         songName.setText(songNamefromIntent);
         locationfromIntent = songIntent.getStringExtra("location");
+
         profileID= songIntent.getStringExtra("profileID");
         profileEmail= songIntent.getStringExtra("profileEmail");
         Log.w(TAG, profileID);
         Log.w(TAG, profileEmail);
 
-
+        mediaPlayer.reset();
         //set Media player
         try {
             mediaPlayer.setDataSource(locationfromIntent);
@@ -89,12 +96,34 @@ public class MusicPlayer extends CustomMenuActivity {
         duration = (TextView) findViewById(R.id.songDuration);
         seekbar = (SeekBar) findViewById(R.id.seekBar);
         seekbar.setMax((int) finalTime);
-        seekbar.setClickable(false);
+        seekbar.setClickable(true);
 
-        historyList = new ArrayList<>();
-        lv = (ListView) findViewById(R.id.listView);
-        new SendRequestHistory().execute();
     }
+
+    //Update new View for music Player
+
+    public void UpdateViews(){
+        songName.setText(currentPlayingSong);
+        finalTime =0;
+        if(mediaPlayer.isPlaying()){
+            mediaPlayer.stop();
+        }
+        try {
+            mediaPlayer.reset();
+            mediaPlayer.setDataSource(currentPlayinglocation);
+            mediaPlayer.prepareAsync();
+            finalTime = mediaPlayer.getDuration();
+            //mediaPlayer.start();
+            //mediaPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //duration = (TextView) findViewById(R.id.songDuration);
+
+        seekbar = (SeekBar) findViewById(R.id.seekBar);
+        seekbar.setMax((int) finalTime);
+    }
+
     // play mp3 song
     public void play(View view) {
         mediaPlayer.start();
@@ -216,7 +245,6 @@ public class MusicPlayer extends CustomMenuActivity {
 
                     //Set messasnger
                     String jsonStr=sb.toString();
-                    Log.e(TAG, "Response from url: " + jsonStr);
                     if (jsonStr != null) {
                         try {
                             JSONObject jsonObj = new JSONObject(jsonStr);
@@ -227,16 +255,18 @@ public class MusicPlayer extends CustomMenuActivity {
                             // looping through All history
                             for (int i = 0; i < arrayNode.length(); i++) {
                                 JSONObject c = arrayNode.getJSONObject(i);
-                                String song_id = c.getString("song_id");
+                                String songid = c.getString("song_id");
                                 String songname = c.getString("song_name");
+                                String songlocation = c.getString("location");
 
 
                                 // tmp hash map for single song
                                 HashMap<String, String> songInfo = new HashMap<>();
 
                                 // adding each child node to HashMap key => value
-                                songInfo.put("song_id", song_id);
+                                songInfo.put("song_id", songid);
                                 songInfo.put("song_name", songname);
+                                songInfo.put("location", songlocation);
                                 // adding contact to contact list
                                 historyList.add(songInfo);
                             }
@@ -264,11 +294,8 @@ public class MusicPlayer extends CustomMenuActivity {
                             }
                         });
                     }
-
-
-
-
                     return sb.toString();
+
                 } else {
                     return new String("false : " + responseCode);
                 }
@@ -285,6 +312,39 @@ public class MusicPlayer extends CustomMenuActivity {
                     R.layout.activity_listview, new String[]{ "song_id","song_name"},
                     new int[]{R.id.song_id, R.id.song_name});
             lv.setAdapter(adapter);
+
+
+
+            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                    // Get the selected item text from ListView
+                   // String selectedItem = (String) parent.getItemAtPosition(position);
+
+                    // Display the selected item text on TextView
+                    Log.e(TAG, "Your song at licked position : " + parent.getItemAtPosition(position));
+                    String value = parent.getItemAtPosition(position).toString();
+
+                    //Convert String back to Map
+
+                    value = value.substring(1, value.length()-1);           //remove curly brackets
+                    String[] keyValuePairs = value.split(",");              //split the string to creat key-value pairs
+                    HashMap<String,String> map = new HashMap<>();
+
+                    for(String pair : keyValuePairs)                        //iterate over the pairs
+                    {
+                        String[] entry = pair.split("=");                   //split the pairs to get key and value
+                        map.put(entry[0].trim(), entry[1].trim());          //add them to the hashmap and trim whitespaces
+                    }
+                    currentPlayingSong = map.get("song_name");
+                    currentPlayinglocation = map.get("location");
+                    Log.e(TAG,"song_name"+currentPlayingSong);
+                    UpdateViews();
+                }
+            });
+
+
         }
 
     }
