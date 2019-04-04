@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
@@ -30,10 +31,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.SeekBar;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,6 +59,9 @@ public class MusicPlayer extends CustomMenuActivity {
     String locationfromIntent, songNamefromIntent, profileID, profileEmail;
     Intent songIntent;
     HashMap<String, String> historyMap = new HashMap<>();
+    private ListView lv;
+
+    ArrayList<HashMap<String, String>> contactList;
 
 
     @Override
@@ -63,8 +71,8 @@ public class MusicPlayer extends CustomMenuActivity {
 
         //initialize views
         initializeViews();
-
-
+        contactList = new ArrayList<>();
+        lv = (ListView) findViewById(R.id.listView);
         new SendRequestHistory().execute();
 
 
@@ -215,8 +223,58 @@ public class MusicPlayer extends CustomMenuActivity {
                     //close the connect
                     conn.disconnect();
                     Log.e("Return", sb.toString());
+
+
                     //Set messasnger
-                    Log.w(TAG,sb.toString());
+                    String jsonStr=sb.toString();
+                    Log.e(TAG, "Response from url: " + jsonStr);
+                    if (jsonStr != null) {
+                        try {
+                            JSONObject jsonObj = new JSONObject(jsonStr);
+
+                            // Getting JSON Array node
+                            JSONArray contacts = jsonObj.getJSONArray("history");
+
+                            // looping through All Contacts
+                            for (int i = 0; i < contacts.length(); i++) {
+                                JSONObject c = contacts.getJSONObject(i);
+                                String song_id = c.getString("song_id");
+                                String songname = c.getString("song_name");
+
+
+                                // tmp hash map for single contact
+                                HashMap<String, String> contact = new HashMap<>();
+
+                                // adding each child node to HashMap key => value
+                                contact.put("song_id", song_id);
+                                contact.put("song_name", songname);
+                                // adding contact to contact list
+                                contactList.add(contact);
+                            }
+                        } catch (final JSONException e) {
+                            Log.e(TAG, "Json parsing error: " + e.getMessage());
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(),
+                                            "Json parsing error: " + e.getMessage(),
+                                            Toast.LENGTH_LONG).show();
+                                }
+                            });
+
+                        }
+
+                    } else {
+                        Log.e(TAG, "Couldn't get json from server.");
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getApplicationContext(),
+                                        "Couldn't get json from server. Check LogCat for possible errors!",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
 
 
 
@@ -229,9 +287,15 @@ public class MusicPlayer extends CustomMenuActivity {
                 return new String("Exception: " + e.getMessage());
             }
         }
+
+
         //Action take after execute
         @Override
         protected void onPostExecute(String result) {
+            ListAdapter adapter = new SimpleAdapter(MusicPlayer.this, contactList,
+                    R.layout.activity_listview, new String[]{ "song_id","song_name"},
+                    new int[]{R.id.song_id, R.id.song_name});
+            lv.setAdapter(adapter);
         }
 
     }
