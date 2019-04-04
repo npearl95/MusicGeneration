@@ -64,14 +64,9 @@ public class MusicPlayer extends CustomMenuActivity {
         //initialize views
         initializeViews();
 
-        Button button = (Button) findViewById(R.id.button);
 
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Log.w(TAG, "Button Clicked");
-                 new SendRequestHistory().execute();
-            }
-        });
+        new SendRequestHistory().execute();
+
 
     }
     public void initializeViews(){
@@ -222,6 +217,10 @@ public class MusicPlayer extends CustomMenuActivity {
                     Log.e("Return", sb.toString());
                     //Set messasnger
                     Log.w(TAG,sb.toString());
+
+
+
+
                     return sb.toString();
                 } else {
                     return new String("false : " + responseCode);
