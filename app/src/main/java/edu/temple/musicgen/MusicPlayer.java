@@ -57,6 +57,8 @@ public class MusicPlayer extends CustomMenuActivity {
     Intent songIntent;
     private ListView lv;
     String currentPlayinglocation, currentPlayingSong;
+    PopupWindow popupWindow;
+    boolean click = true;
 
     ArrayList<HashMap<String, String>> historyList;
 
@@ -179,26 +181,26 @@ public class MusicPlayer extends CustomMenuActivity {
     }
     public  void editname(View view) {
         Button closePopupBtn;
-        final PopupWindow popupWindow;
+        //PopupWindow popupWindow;
         //instantiate the popup.xml layout file
         LayoutInflater layoutInflater = (LayoutInflater) MusicPlayer.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View customView = layoutInflater.inflate(R.layout.popup, null);
+        View customView = layoutInflater.inflate(R.layout.popup, null, false);
 
         closePopupBtn = (Button) customView.findViewById(R.id.closePopupBtn);
 
         //instantiate popup window
-        popupWindow = new PopupWindow(customView, ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+        popupWindow = new PopupWindow(customView, ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT, true);
 
         //display the popup window
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 10, 10);
         Log.e(TAG,"CLOSE BUTTON about to clicked");
-        popupWindow.setOutsideTouchable(true);
+        //popupWindow.setOutsideTouchable(true);
         //close the popup window on button click
         closePopupBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.e(TAG,"CLOSE BUTTON clicked");
                 popupWindow.dismiss();
-                Log.e(TAG,"CLOSE BUTTON CLICKED");
             }
         });
     }
