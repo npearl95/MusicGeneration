@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -33,7 +34,7 @@ public class GenerateSong extends CustomMenuActivity {
     HashMap<String, String> songMap = new HashMap<>();
     String selectedDuration;
     String selectedGenre,selectedTempo;
-    String userName, profileID, profileEmail;
+    String userName, profileID, profileEmail, songId;
 
     private static final String TAG = "GenerateSong";
     @Override
@@ -59,7 +60,7 @@ public class GenerateSong extends CustomMenuActivity {
         spinnergenre.setAdapter(genreAdapter);
 
         selectedGenre = spinnergenre.getSelectedItem().toString();
-        Log.w(TAG, "Genre"+ selectedGenre);
+        //Log.w(TAG, "Genre"+ selectedGenre);
 
 
         //Spinner Tempo
@@ -69,9 +70,6 @@ public class GenerateSong extends CustomMenuActivity {
         spinnerTempo.setAdapter(tempoAdapter);
 
         selectedTempo = spinnerTempo.getSelectedItem().toString();
-        Log.w(TAG, "Tempo "+ selectedTempo);
-
-
         //Spinner Duration
         Spinner spinnerDuration = findViewById(R.id.duration_spinner);
         ArrayAdapter<CharSequence> durationAdapter = ArrayAdapter.createFromResource(this, R.array.duration, android.R.layout.simple_spinner_item);
@@ -79,7 +77,6 @@ public class GenerateSong extends CustomMenuActivity {
         spinnerDuration.setAdapter(durationAdapter);
 
         selectedDuration = spinnerDuration.getSelectedItem().toString();
-        Log.w(TAG, "duration"+ selectedDuration);
 
         Button generate_button = findViewById(R.id.generate_button);
         generate_button.setOnClickListener(new View.OnClickListener() {
@@ -126,14 +123,14 @@ public class GenerateSong extends CustomMenuActivity {
                 OutputStreamWriter wr= new OutputStreamWriter(conn.getOutputStream());
                 wr.write(postDataParams.toString());
                 OutputStream os = conn.getOutputStream();
-                os.write(postDataParams.toString().getBytes("UTF-8"));
+                os.write(postDataParams.toString().getBytes(StandardCharsets.UTF_8));
                 os.close();
 
                 int responseCode = conn.getResponseCode();
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
                     // Read response
                     BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    StringBuffer sb = new StringBuffer("");
+                    StringBuffer sb = new StringBuffer();
                     String line="";
                     while((line = in.readLine()) != null) {
                         sb.append(line);
@@ -142,6 +139,9 @@ public class GenerateSong extends CustomMenuActivity {
                     //close the connect
                     conn.disconnect();
                     Log.e("Return", sb.toString());
+                    JSONObject testJSON = new JSONObject(sb.toString());
+                    //Log.w(TAG,testJSON);
+
                     songMap = jsonToMap(sb.toString());
                      //Set messasnger
                     this.dialog.setMessage("Done");
@@ -174,10 +174,13 @@ public class GenerateSong extends CustomMenuActivity {
             //profileEmail': <string of the google email>
             //songName
             //location
+            //songID
             songIntent.putExtra("songName", myResultInMap.get("song_name"));
             songIntent.putExtra("location", myResultInMap.get("location"));
             songIntent.putExtra("profileEmail", profileEmail);
             songIntent.putExtra("profileID", profileID);
+            songIntent.putExtra("songID", myResultInMap.get("song_id"));
+            Log.e(TAG, "Intent's Sent song Id"+myResultInMap.get("song_id"));
             startActivity(songIntent);
         }
 

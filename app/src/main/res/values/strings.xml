@@ -3,6 +3,7 @@
     <string name="title_text">Sign In</string>
 
     <string-array name="genre">
+        <item>Folk</item>
         <item>Jazz</item>
         <item>Rock</item>
         <item>Pop</item>
@@ -70,7 +71,7 @@
     <!-- Messages for the Rest API activity -->
     <string name="connections_fmt">Connections: %1$s</string>
     <string name="msg_contacts_failed">Get contacts failed.</string>
-    155900864134-rt85tluoegohjkk6qm30sbprd426ing4.apps.googleusercontent.com
+
     <!-- Server Client ID.  This should be a valid Web OAuth 2.0 Client ID obtained
          from https://console.developers.google.com/ -->
     <string name="server_client_id">155900864134-i9c4c5h2rhbhqddv88ffbbi3u8s2mqkk.apps.googleusercontent.com</string>

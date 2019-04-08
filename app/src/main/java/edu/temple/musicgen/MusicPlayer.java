@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -20,14 +21,17 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -57,8 +61,11 @@ public class MusicPlayer extends CustomMenuActivity {
     Intent songIntent;
     private ListView lv;
     String currentPlayinglocation, currentPlayingSong;
+    String currentPlayingSongID;
     PopupWindow popupWindow;
     boolean click = true;
+    private String newNamefromUser = "";
+    EditText edit;
 
     ArrayList<HashMap<String, String>> historyList;
 
@@ -70,15 +77,13 @@ public class MusicPlayer extends CustomMenuActivity {
 
         //initialize views
         initializeViews();
-        historyList = new ArrayList<>();
-        lv = (ListView) findViewById(R.id.listView);
-        new SendRequestHistory().execute();
+
 
 
 
     }
     public void initializeViews(){
-        songName = (TextView) findViewById(R.id.songName);
+        songName = findViewById(R.id.songName);
         //mediaPlayer = MediaPlayer.create(this, R.raw.mymusic);
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -86,6 +91,9 @@ public class MusicPlayer extends CustomMenuActivity {
         songNamefromIntent = songIntent.getStringExtra("songName");
         songName.setText(songNamefromIntent);
         locationfromIntent = songIntent.getStringExtra("location");
+        currentPlayingSongID = songIntent.getStringExtra("song_id");
+        Log.w(TAG, "Current song ID"+currentPlayingSongID);
+
 
         profileID= songIntent.getStringExtra("profileID");
         profileEmail= songIntent.getStringExtra("profileEmail");
@@ -102,10 +110,14 @@ public class MusicPlayer extends CustomMenuActivity {
         }
         finalTime = mediaPlayer.getDuration();
         //Log.w(TAG, "duration "+duration);
-        duration = (TextView) findViewById(R.id.songDuration);
-        seekbar = (SeekBar) findViewById(R.id.seekBar);
+        duration = findViewById(R.id.songDuration);
+        seekbar = findViewById(R.id.seekBar);
         seekbar.setMax((int) finalTime);
         seekbar.setClickable(true);
+        historyList = new ArrayList<>();
+        lv = findViewById(R.id.listView);
+
+        new SendRequestHistory().execute();
 
     }
 
@@ -129,8 +141,12 @@ public class MusicPlayer extends CustomMenuActivity {
         }
         //duration = (TextView) findViewById(R.id.songDuration);
 
-        seekbar = (SeekBar) findViewById(R.id.seekBar);
+        seekbar = findViewById(R.id.seekBar);
         seekbar.setMax((int) finalTime);
+        historyList = new ArrayList<>();
+        lv = findViewById(R.id.listView);
+        lv = findViewById(R.id.listView);
+        new SendRequestHistory().execute();
     }
 
     // play mp3 song
@@ -181,26 +197,56 @@ public class MusicPlayer extends CustomMenuActivity {
     }
     public  void editname(View view) {
         Button closePopupBtn;
+        Button editPopupBtn;
+        Button deletePopupBtn;
         //PopupWindow popupWindow;
         //instantiate the popup.xml layout file
         LayoutInflater layoutInflater = (LayoutInflater) MusicPlayer.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View customView = layoutInflater.inflate(R.layout.popup, null, false);
 
-        closePopupBtn = (Button) customView.findViewById(R.id.closePopupBtn);
+        closePopupBtn = customView.findViewById(R.id.closePopupBtn);
+        editPopupBtn =customView.findViewById(R.id.editPopupBtn);
+        deletePopupBtn =customView.findViewById(R.id.deletePopopBtn);
+        edit = customView.findViewById(R.id.newName);
+
+
+        //newNameInput.setInputType(InputType.TYPE_CLASS_TEXT);
+        //newName =newNameInput.getText().toString();
+        Log.e(TAG,"new name from user input" +newNamefromUser);
 
         //instantiate popup window
         popupWindow = new PopupWindow(customView, ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT, true);
 
         //display the popup window
         popupWindow.showAtLocation(view, Gravity.CENTER, 10, 10);
-        Log.e(TAG,"CLOSE BUTTON about to clicked");
         //popupWindow.setOutsideTouchable(true);
-        //close the popup window on button click
+
         closePopupBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.e(TAG,"CLOSE BUTTON clicked");
                 popupWindow.dismiss();
+            }
+        });
+        //close the popup window on button click
+        editPopupBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e(TAG,"EDIT BUTTON clicked");
+                new SendRequestChangeName().execute();
+                //new SendRequestHistory().execute();
+                popupWindow.dismiss();
+
+            }
+        });
+        deletePopupBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e(TAG,"Delete BUTTON clicked");
+                new SendRequestDeleteSong().execute();
+                new SendRequestHistory().execute();
+                popupWindow.dismiss();
+
             }
         });
     }
@@ -259,14 +305,16 @@ public class MusicPlayer extends CustomMenuActivity {
                 OutputStreamWriter wr= new OutputStreamWriter(conn.getOutputStream());
                 wr.write(postDataParams.toString());
                 OutputStream os = conn.getOutputStream();
-                os.write(postDataParams.toString().getBytes("UTF-8"));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    os.write(postDataParams.toString().getBytes(StandardCharsets.UTF_8));
+                }
                 os.close();
 
                 int responseCode = conn.getResponseCode();
                 if (responseCode == HttpsURLConnection.HTTP_OK) {
                     // Read response
                     BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    StringBuffer sb = new StringBuffer("");
+                    StringBuffer sb = new StringBuffer();
                     String line="";
                     while((line = in.readLine()) != null) {
                         sb.append(line);
@@ -276,6 +324,8 @@ public class MusicPlayer extends CustomMenuActivity {
                     conn.disconnect();
                     Log.e("Return", sb.toString());
 
+
+                    historyList.clear();
 
                     //Set messasnger
                     String jsonStr=sb.toString();
@@ -343,9 +393,14 @@ public class MusicPlayer extends CustomMenuActivity {
         //Action take after execute
         @Override
         protected void onPostExecute(String result) {
+            //Clean list view
+            lv.setAdapter(null);
             ListAdapter adapter = new SimpleAdapter(MusicPlayer.this, historyList,
-                    R.layout.activity_listview, new String[]{ "song_id","song_name"},
-                    new int[]{R.id.song_id, R.id.song_name});
+                    R.layout.activity_listview, new String[]{ "song_name","song_id"},
+                    new int[]{ R.id.song_name,R.id.song_id});
+
+
+
             lv.setAdapter(adapter);
 
 
@@ -374,6 +429,7 @@ public class MusicPlayer extends CustomMenuActivity {
                     }
                     currentPlayingSong = map.get("song_name");
                     currentPlayinglocation = map.get("location");
+                    currentPlayingSongID = map.get("song_id");
                     Log.e(TAG,"song_name"+currentPlayingSong);
                     UpdateViews();
                 }
@@ -382,5 +438,184 @@ public class MusicPlayer extends CustomMenuActivity {
 
         }
 
+    }
+
+
+
+
+
+
+    public class SendRequestChangeName extends AsyncTask<String, Void, String> {
+
+        //Parameters:
+        //{
+        //    'profileID': <string of the google profile id>,
+        //    'profileEmail': <string of the google email>,
+        //    'songID': <string of the song id from the /history song object>,
+        //    'newName': <string of the new song name>
+        //}
+
+
+        protected void onPreExecute() {
+            newNamefromUser = edit.getText().toString();
+
+        }
+
+        protected String doInBackground(String... arg0) {
+
+            Log.e(TAG, "Send Request Change");
+            Log.e(TAG, "Current song Id"+currentPlayingSongID);
+
+
+
+
+            //Object
+            JSONObject postDataParams = new JSONObject();
+            try {
+                postDataParams.put("profileID", profileID);
+                postDataParams.put("profileEmail", profileEmail);
+                postDataParams.put("songID", currentPlayingSongID);
+                postDataParams.put("newName", newNamefromUser);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.e(TAG, "Send object"+postDataParams);
+            try {
+                String request = "http://api.thewimbo.me/edit_song";
+                URL url = new URL(request);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setDoOutput(true);
+                conn.setInstanceFollowRedirects(false);
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setUseCaches(false);
+                OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+                wr.write(postDataParams.toString());
+                OutputStream os = conn.getOutputStream();
+                os.write(postDataParams.toString().getBytes(StandardCharsets.UTF_8));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    // Read response
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuffer sb = new StringBuffer();
+                    String line = "";
+                    while ((line = in.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    in.close();
+                    //close the connect
+                    conn.disconnect();
+                    Log.e("Return", sb.toString());
+
+                    return sb.toString();
+
+                } else {
+                    return new String("false : " + responseCode);
+                }
+            } catch (Exception e) {
+                return new String("Exception: " + e.getMessage());
+            }
+        }
+
+
+        //Action take after execute
+        @Override
+        protected void onPostExecute(String result) {
+            //Update the listview
+            new SendRequestHistory().execute();
+        }
+    }
+
+
+
+
+
+
+
+
+    //DeleteSOngRequest
+
+    public class SendRequestDeleteSong extends AsyncTask<String, Void, String> {
+
+        //Parameters:
+        //{
+        //    'profileID': <string of the google profile id>,
+        //    'profileEmail': <string of the google email>,
+        //    'songID': <string of the song id from the /history song object>,
+        //    'newName': <string of the new song name>
+        //}
+
+
+        protected void onPreExecute() {
+
+        }
+
+        protected String doInBackground(String... arg0) {
+            Log.e(TAG, "Send Request Change");
+            Log.e(TAG, "Current song Id"+currentPlayingSongID);
+
+
+
+            //Object
+            JSONObject postDataParams = new JSONObject();
+            try {
+                postDataParams.put("profileID", profileID);
+                postDataParams.put("profileEmail", profileEmail);
+                postDataParams.put("songID", currentPlayingSongID);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.e(TAG, "Send object"+postDataParams);
+            try {
+                String request = "http://api.thewimbo.me/remove_song";
+                URL url = new URL(request);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setDoOutput(true);
+                conn.setInstanceFollowRedirects(false);
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setUseCaches(false);
+                OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+                wr.write(postDataParams.toString());
+                OutputStream os = conn.getOutputStream();
+                os.write(postDataParams.toString().getBytes(StandardCharsets.UTF_8));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    // Read response
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuffer sb = new StringBuffer();
+                    String line = "";
+                    while ((line = in.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    in.close();
+                    //close the connect
+                    conn.disconnect();
+                    Log.e("Return", sb.toString());
+
+                    return sb.toString();
+
+                } else {
+                    return new String("false : " + responseCode);
+                }
+            } catch (Exception e) {
+                return new String("Exception: " + e.getMessage());
+            }
+        }
+
+
+        //Action take after execute
+        @Override
+        protected void onPostExecute(String result) {
+
+            Log.e("DONE Delete song", result);
+
+        }
     }
 }
