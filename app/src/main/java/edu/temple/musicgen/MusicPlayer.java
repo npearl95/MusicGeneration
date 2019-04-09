@@ -53,7 +53,7 @@ public class MusicPlayer extends CustomMenuActivity {
     private MediaPlayer mediaPlayer;
     public TextView songName, duration;
     private double timeElapsed = 0, finalTime = 0;
-    private int forwardTime = 2000, backwardTime = 2000;
+    private int forwardTime = 30000, backwardTime = 30000;
     private Handler durationHandler = new Handler();
     private SeekBar seekbar;
     DownloadManager downloadManager;
@@ -194,7 +194,7 @@ public class MusicPlayer extends CustomMenuActivity {
     public  void editname(View view) {
         Button closePopupBtn;
         Button editPopupBtn;
-        Button deletePopupBtn;
+
 
         //PopupWindow popupWindow;
         LayoutInflater layoutInflater = (LayoutInflater) MusicPlayer.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -202,7 +202,6 @@ public class MusicPlayer extends CustomMenuActivity {
 
         closePopupBtn = customView.findViewById(R.id.closePopupBtn);
         editPopupBtn =customView.findViewById(R.id.editPopupBtn);
-        deletePopupBtn =customView.findViewById(R.id.deletePopopBtn);
         edit = customView.findViewById(R.id.newName);
 
         Log.e(TAG,"new name from user input" +newNamefromUser);
@@ -227,15 +226,6 @@ public class MusicPlayer extends CustomMenuActivity {
             public void onClick(View v) {
                 Log.e(TAG,"EDIT BUTTON clicked");
                 new SendRequestChangeName().execute();
-                popupWindow.dismiss();
-            }
-        });
-
-        deletePopupBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e(TAG,"Delete BUTTON clicked");
-                new SendRequestDeleteSong().execute();
                 popupWindow.dismiss();
             }
         });
@@ -390,13 +380,13 @@ public class MusicPlayer extends CustomMenuActivity {
                     R.layout.activity_listview, new String[]{ "song_name","song_id"},
                     new int[]{ R.id.song_name,R.id.song_id});
 
-            try {
+            //try {
                 //set time in mili
-                Thread.sleep(1000);
+              //  Thread.sleep(1000);
 
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+            //}catch (Exception e){
+              //  e.printStackTrace();
+            //}
 
 
 
