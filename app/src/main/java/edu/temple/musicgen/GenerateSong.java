@@ -111,7 +111,7 @@ public class GenerateSong extends CustomMenuActivity {
                 e.printStackTrace();
             }
             try {
-                String request        = "http://api.thewimbo.me/generate_song";
+                String request        = "http://18.191.144.92/generate_song";
                 URL    url            = new URL( request );
                 HttpURLConnection conn= (HttpURLConnection) url.openConnection();
                 conn.setDoOutput( true );
@@ -195,8 +195,6 @@ public class GenerateSong extends CustomMenuActivity {
             String value = jObject.getString(key);
             map.put(key, value);
         }
-       // System.out.println("json : "+jObject);
-       // System.out.println("map : "+map);
         return map;
     }
 

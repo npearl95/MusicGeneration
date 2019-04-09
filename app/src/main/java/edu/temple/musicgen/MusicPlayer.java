@@ -63,7 +63,6 @@ public class MusicPlayer extends CustomMenuActivity {
     String currentPlayinglocation, currentPlayingSong;
     String currentPlayingSongID;
     PopupWindow popupWindow;
-    boolean click = true;
     private String newNamefromUser = "";
     EditText edit;
 
@@ -79,12 +78,9 @@ public class MusicPlayer extends CustomMenuActivity {
         initializeViews();
 
 
-
-
     }
     public void initializeViews(){
         songName = findViewById(R.id.songName);
-        //mediaPlayer = MediaPlayer.create(this, R.raw.mymusic);
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         songIntent = getIntent();
@@ -109,7 +105,6 @@ public class MusicPlayer extends CustomMenuActivity {
             e.printStackTrace();
         }
         finalTime = mediaPlayer.getDuration();
-        //Log.w(TAG, "duration "+duration);
         duration = findViewById(R.id.songDuration);
         seekbar = findViewById(R.id.seekBar);
         seekbar.setMax((int) finalTime);
@@ -134,8 +129,6 @@ public class MusicPlayer extends CustomMenuActivity {
             mediaPlayer.setDataSource(currentPlayinglocation);
             mediaPlayer.prepareAsync();
             finalTime = mediaPlayer.getDuration();
-            //mediaPlayer.start();
-            //mediaPlayer.prepare();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -195,12 +188,15 @@ public class MusicPlayer extends CustomMenuActivity {
             mediaPlayer.seekTo((int) timeElapsed);
         }
     }
+    public void deletesong(View view){
+        new SendRequestDeleteSong().execute();
+    }
     public  void editname(View view) {
         Button closePopupBtn;
         Button editPopupBtn;
         Button deletePopupBtn;
+
         //PopupWindow popupWindow;
-        //instantiate the popup.xml layout file
         LayoutInflater layoutInflater = (LayoutInflater) MusicPlayer.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View customView = layoutInflater.inflate(R.layout.popup, null, false);
 
@@ -209,9 +205,6 @@ public class MusicPlayer extends CustomMenuActivity {
         deletePopupBtn =customView.findViewById(R.id.deletePopopBtn);
         edit = customView.findViewById(R.id.newName);
 
-
-        //newNameInput.setInputType(InputType.TYPE_CLASS_TEXT);
-        //newName =newNameInput.getText().toString();
         Log.e(TAG,"new name from user input" +newNamefromUser);
 
         //instantiate popup window
@@ -234,19 +227,16 @@ public class MusicPlayer extends CustomMenuActivity {
             public void onClick(View v) {
                 Log.e(TAG,"EDIT BUTTON clicked");
                 new SendRequestChangeName().execute();
-                //new SendRequestHistory().execute();
                 popupWindow.dismiss();
-
             }
         });
+
         deletePopupBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.e(TAG,"Delete BUTTON clicked");
                 new SendRequestDeleteSong().execute();
-                new SendRequestHistory().execute();
                 popupWindow.dismiss();
-
             }
         });
     }
@@ -258,13 +248,14 @@ public class MusicPlayer extends CustomMenuActivity {
     }
     public long download(View view){
         long downloadReference;
-        Uri uri = Uri.parse(locationfromIntent);
+        Uri uri = Uri.parse(currentPlayinglocation);
+        Log.w(TAG, "Song download link"+currentPlayinglocation);
         // Create request for android download manager
         downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(uri);
 
         //Setting title of request
-        request.setTitle(songNamefromIntent);
+        request.setTitle(currentPlayingSong);
 
         //Setting description of request
         request.setDescription("Song from Wimbo Music");
@@ -293,7 +284,7 @@ public class MusicPlayer extends CustomMenuActivity {
                 e.printStackTrace();
             }
             try {
-                String request        = "http://api.thewimbo.me/history";
+                String request        = "http://18.191.144.92/history";
                 URL    url            = new URL( request );
                 HttpURLConnection conn= (HttpURLConnection) url.openConnection();
                 conn.setDoOutput( true );
@@ -399,12 +390,17 @@ public class MusicPlayer extends CustomMenuActivity {
                     R.layout.activity_listview, new String[]{ "song_name","song_id"},
                     new int[]{ R.id.song_name,R.id.song_id});
 
+            try {
+                //set time in mili
+                Thread.sleep(1000);
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
 
 
             lv.setAdapter(adapter);
-
-
-
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -431,6 +427,8 @@ public class MusicPlayer extends CustomMenuActivity {
                     currentPlayinglocation = map.get("location");
                     currentPlayingSongID = map.get("song_id");
                     Log.e(TAG,"song_name"+currentPlayingSong);
+
+
                     UpdateViews();
                 }
             });
@@ -481,7 +479,7 @@ public class MusicPlayer extends CustomMenuActivity {
             }
             Log.e(TAG, "Send object"+postDataParams);
             try {
-                String request = "http://api.thewimbo.me/edit_song";
+                String request = "http://18.191.144.92/edit_song";
                 URL url = new URL(request);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setDoOutput(true);
@@ -525,6 +523,8 @@ public class MusicPlayer extends CustomMenuActivity {
         @Override
         protected void onPostExecute(String result) {
             //Update the listview
+            currentPlayingSong = newNamefromUser;
+            songName.setText(currentPlayingSong);
             new SendRequestHistory().execute();
         }
     }
@@ -570,7 +570,7 @@ public class MusicPlayer extends CustomMenuActivity {
             }
             Log.e(TAG, "Send object"+postDataParams);
             try {
-                String request = "http://api.thewimbo.me/remove_song";
+                String request = "http://18.191.144.92/remove_song";
                 URL url = new URL(request);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setDoOutput(true);
@@ -613,8 +613,8 @@ public class MusicPlayer extends CustomMenuActivity {
         //Action take after execute
         @Override
         protected void onPostExecute(String result) {
-
-            Log.e("DONE Delete song", result);
+            //TODO: Add to what happen if to the media if user delete the current one
+            new SendRequestHistory().execute();
 
         }
     }
