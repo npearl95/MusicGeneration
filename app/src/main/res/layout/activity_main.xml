@@ -84,12 +84,13 @@
 
             <Button
                 android:id="@+id/sign_out_button"
-                android:layout_width="0dp"
+                style="@style/Widget.AppCompat.Button"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="3"
                 android:text="@string/sign_out"
                 android:theme="@style/ThemeOverlay.MyDarkButton"
-                android:visibility="visible"/>
+                android:visibility="visible" />
 
             <!--Button
                 android:id="@+id/disconnect_button"
@@ -103,7 +104,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:visibility="visible"/>
+                android:visibility="visible" />
         </LinearLayout>
 
     </RelativeLayout>

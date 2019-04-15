@@ -23,12 +23,6 @@ public class CustomMenuActivity extends AppCompatActivity {
                 case R.id.Generate:
                     Generate();
                     return true;
-                case R.id.Player:
-                    Player();
-                    return true;
-                case R.id.History:
-                    History();
-                    return true;
                     default:
                 return super.onOptionsItemSelected(item);
         }
@@ -47,16 +41,4 @@ public class CustomMenuActivity extends AppCompatActivity {
         Intent myIntent = new Intent(this, GenerateSong.class);
         startActivityForResult(myIntent, 0);
     }
-
-    private void Player(){
-        //Do something new
-        Intent myIntent = new Intent(this, MusicPlayer.class);
-        startActivityForResult(myIntent, 0);
-    }
-    private void History(){
-        //Do something new
-        Intent myIntent = new Intent(this, History.class);
-        startActivityForResult(myIntent, 0);
-    }
-
 }

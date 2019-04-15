@@ -14,8 +14,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -29,9 +31,11 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -57,15 +61,13 @@ public class MusicPlayer extends CustomMenuActivity {
     private Handler durationHandler = new Handler();
     private SeekBar seekbar;
     DownloadManager downloadManager;
-    String locationfromIntent, songNamefromIntent, profileID, profileEmail;
     Intent songIntent;
     private ListView lv;
-    String currentPlayinglocation, currentPlayingSong;
-    String currentPlayingSongID;
+    String profileID, profileEmail, currentPlayinglocation, currentPlayingSong, currentPlayingSongID;
     PopupWindow popupWindow;
     private String newNamefromUser = "";
     EditText edit;
-
+    ImageButton media_play_button, media_pause_button;
     ArrayList<HashMap<String, String>> historyList;
 
 
@@ -73,34 +75,37 @@ public class MusicPlayer extends CustomMenuActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_player);
-
-        //initialize views
-        initializeViews();
-
-
-    }
-    public void initializeViews(){
         songName = findViewById(R.id.songName);
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        media_play_button = findViewById(R.id.media_play);
+        media_pause_button = findViewById(R.id.media_pause);
         songIntent = getIntent();
-        songNamefromIntent = songIntent.getStringExtra("songName");
-        songName.setText(songNamefromIntent);
-        locationfromIntent = songIntent.getStringExtra("location");
-        currentPlayingSongID = songIntent.getStringExtra("song_id");
-        Log.w(TAG, "Current song ID"+currentPlayingSongID);
-
-
+        //Handle intent when the user not generate it any new song but jum into history
+        currentPlayingSong = songIntent.getStringExtra("songName");
+        currentPlayinglocation = songIntent.getStringExtra("location");
+        currentPlayingSongID = songIntent.getStringExtra("songID");
+        Log.w(TAG, "currentPlayingSongID = songIntent"+currentPlayingSongID);
         profileID= songIntent.getStringExtra("profileID");
         profileEmail= songIntent.getStringExtra("profileEmail");
-        Log.w(TAG, profileID);
-        Log.w(TAG, profileEmail);
+        duration = (TextView) findViewById(R.id.songDuration);
 
-        mediaPlayer.reset();
+
+
+        //initialize views
+        //initializeViews();
+        UpdateViews();
+
+    }
+    public void initializeViews(){
+
+       /* songName.setText(currentPlayingSong);
         //set Media player
         try {
-            mediaPlayer.setDataSource(locationfromIntent);
-            mediaPlayer.prepare();
+            mediaPlayer.reset();
+            mediaPlayer.setDataSource(currentPlayinglocation);
+            mediaPlayer.prepareAsync();
+            finalTime = mediaPlayer.getDuration();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,7 +117,29 @@ public class MusicPlayer extends CustomMenuActivity {
         historyList = new ArrayList<>();
         lv = findViewById(R.id.listView);
 
+        new SendRequestHistory().execute();*/
+        songName.setText(currentPlayingSong);
+        finalTime =0;
+        if(mediaPlayer.isPlaying()){
+            mediaPlayer.stop();
+        }
+        try {
+            mediaPlayer.reset();
+            mediaPlayer.setDataSource(currentPlayinglocation);
+            mediaPlayer.prepareAsync();
+            finalTime = mediaPlayer.getDuration();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finalTime = mediaPlayer.getDuration();
+
+
+        seekbar = findViewById(R.id.seekBar);
+        seekbar.setMax((int) finalTime);
+        historyList = new ArrayList<>();
+        lv = findViewById(R.id.listView);
         new SendRequestHistory().execute();
+
 
     }
 
@@ -129,21 +156,22 @@ public class MusicPlayer extends CustomMenuActivity {
             mediaPlayer.setDataSource(currentPlayinglocation);
             mediaPlayer.prepareAsync();
             finalTime = mediaPlayer.getDuration();
+            Log.w(TAG, "Song's duration"+finalTime);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //duration = (TextView) findViewById(R.id.songDuration);
-
         seekbar = findViewById(R.id.seekBar);
         seekbar.setMax((int) finalTime);
+        seekbar.setClickable(true);
         historyList = new ArrayList<>();
-        lv = findViewById(R.id.listView);
         lv = findViewById(R.id.listView);
         new SendRequestHistory().execute();
     }
 
     // play mp3 song
     public void play(View view) {
+        media_play_button.setVisibility(View.INVISIBLE);
+        media_pause_button.setVisibility(View.VISIBLE);
         mediaPlayer.start();
         timeElapsed = mediaPlayer.getCurrentPosition();
         seekbar.setProgress((int) timeElapsed);
@@ -159,16 +187,17 @@ public class MusicPlayer extends CustomMenuActivity {
             seekbar.setProgress((int) timeElapsed);
             //set time remaing
             double timeRemaining = finalTime - timeElapsed;
-            duration.setText(String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining), TimeUnit.MILLISECONDS.toSeconds((long) timeRemaining) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining))));
+            duration.setText(String.format("%d:%d", TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining), TimeUnit.MILLISECONDS.toSeconds((long) timeRemaining) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining))));
 
             //repeat yourself that again in 100 miliseconds
-            durationHandler.postDelayed(this, 100);
+            //durationHandler.postDelayed(this, 100);
         }
     };
 
     // pause mp3 song
     public void pause(View view) {
-
+        media_play_button.setVisibility(View.VISIBLE);
+        media_pause_button.setVisibility(View.INVISIBLE);
         mediaPlayer.pause();
     }
 
@@ -189,7 +218,19 @@ public class MusicPlayer extends CustomMenuActivity {
         }
     }
     public void deletesong(View view){
-        new SendRequestDeleteSong().execute();
+
+
+        new AlertDialog.Builder(this)
+                .setTitle("Title")
+                .setMessage("Do you want to delete "+currentPlayingSong+"?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        new SendRequestDeleteSong().execute();
+                        Toast.makeText(MusicPlayer.this, "Deleted", Toast.LENGTH_SHORT).show();
+                    }})
+                .setNegativeButton(android.R.string.no, null).show();
+        //new SendRequestDeleteSong().execute();
     }
     public  void editname(View view) {
         Button closePopupBtn;
@@ -212,7 +253,7 @@ public class MusicPlayer extends CustomMenuActivity {
         //display the popup window
         popupWindow.showAtLocation(view, Gravity.CENTER, 10, 10);
         //popupWindow.setOutsideTouchable(true);
-
+        dimBehind(popupWindow);
         closePopupBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -323,7 +364,7 @@ public class MusicPlayer extends CustomMenuActivity {
                                 String songid = c.getString("song_id");
                                 String songname = c.getString("song_name");
                                 String songlocation = c.getString("location");
-
+                                String songTimeStamp = c.getString("timestamp");
 
                                 // tmp hash map for single song
                                 HashMap<String, String> songInfo = new HashMap<>();
@@ -332,6 +373,7 @@ public class MusicPlayer extends CustomMenuActivity {
                                 songInfo.put("song_id", songid);
                                 songInfo.put("song_name", songname);
                                 songInfo.put("location", songlocation);
+                                //songInfo.put("timestamp", songTimeStamp);
 
                                 // adding contact to contact list
                                 historyList.add(songInfo);
@@ -417,8 +459,6 @@ public class MusicPlayer extends CustomMenuActivity {
                     currentPlayinglocation = map.get("location");
                     currentPlayingSongID = map.get("song_id");
                     Log.e(TAG,"song_name"+currentPlayingSong);
-
-
                     UpdateViews();
                 }
             });
@@ -607,5 +647,28 @@ public class MusicPlayer extends CustomMenuActivity {
             new SendRequestHistory().execute();
 
         }
+    }
+
+    public static void dimBehind(PopupWindow popupWindow) {
+        View container;
+        if (popupWindow.getBackground() == null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                container = (View) popupWindow.getContentView().getParent();
+            } else {
+                container = popupWindow.getContentView();
+            }
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                container = (View) popupWindow.getContentView().getParent().getParent();
+            } else {
+                container = (View) popupWindow.getContentView().getParent();
+            }
+        }
+        Context context = popupWindow.getContentView().getContext();
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        WindowManager.LayoutParams p = (WindowManager.LayoutParams) container.getLayoutParams();
+        p.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        p.dimAmount = 0.3f;
+        wm.updateViewLayout(container, p);
     }
 }
