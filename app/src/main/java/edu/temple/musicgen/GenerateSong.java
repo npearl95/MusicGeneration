@@ -186,7 +186,6 @@ public class GenerateSong extends CustomMenuActivity {
 
     }
     public static HashMap<String, String> jsonToMap(String t) throws JSONException {
-
         HashMap<String, String> map = new HashMap<String, String>();
         JSONObject jObject = new JSONObject(t);
         Iterator<?> keys = jObject.keys();

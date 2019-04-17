@@ -1,7 +1,10 @@
 package edu.temple.musicgen;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -51,6 +54,8 @@ import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import static edu.temple.musicgen.GenerateSong.jsonToMap;
+
 public class MusicPlayer extends CustomMenuActivity {
 
     final static String TAG ="MusicPlayer";
@@ -90,62 +95,15 @@ public class MusicPlayer extends CustomMenuActivity {
         profileEmail= songIntent.getStringExtra("profileEmail");
         duration = (TextView) findViewById(R.id.songDuration);
 
-
-
-        //initialize views
-        //initializeViews();
         UpdateViews();
-
-    }
-    public void initializeViews(){
-
-       /* songName.setText(currentPlayingSong);
-        //set Media player
-        try {
-            mediaPlayer.reset();
-            mediaPlayer.setDataSource(currentPlayinglocation);
-            mediaPlayer.prepareAsync();
-            finalTime = mediaPlayer.getDuration();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        finalTime = mediaPlayer.getDuration();
-        duration = findViewById(R.id.songDuration);
-        seekbar = findViewById(R.id.seekBar);
-        seekbar.setMax((int) finalTime);
-        seekbar.setClickable(true);
-        historyList = new ArrayList<>();
-        lv = findViewById(R.id.listView);
-
-        new SendRequestHistory().execute();*/
-        songName.setText(currentPlayingSong);
-        finalTime =0;
-        if(mediaPlayer.isPlaying()){
-            mediaPlayer.stop();
-        }
-        try {
-            mediaPlayer.reset();
-            mediaPlayer.setDataSource(currentPlayinglocation);
-            mediaPlayer.prepareAsync();
-            finalTime = mediaPlayer.getDuration();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        finalTime = mediaPlayer.getDuration();
-
-
-        seekbar = findViewById(R.id.seekBar);
-        seekbar.setMax((int) finalTime);
-        historyList = new ArrayList<>();
-        lv = findViewById(R.id.listView);
-        new SendRequestHistory().execute();
-
 
     }
 
     //Update new View for music Player
 
     public void UpdateViews(){
+        media_play_button.setVisibility(View.VISIBLE);
+        media_pause_button.setVisibility(View.INVISIBLE);
         songName.setText(currentPlayingSong);
         finalTime =0;
         if(mediaPlayer.isPlaying()){
@@ -154,7 +112,7 @@ public class MusicPlayer extends CustomMenuActivity {
         try {
             mediaPlayer.reset();
             mediaPlayer.setDataSource(currentPlayinglocation);
-            mediaPlayer.prepareAsync();
+            mediaPlayer.prepare();
             finalTime = mediaPlayer.getDuration();
             Log.w(TAG, "Song's duration"+finalTime);
         } catch (IOException e) {
@@ -163,10 +121,14 @@ public class MusicPlayer extends CustomMenuActivity {
         seekbar = findViewById(R.id.seekBar);
         seekbar.setMax((int) finalTime);
         seekbar.setClickable(true);
+
+
+
         historyList = new ArrayList<>();
         lv = findViewById(R.id.listView);
         new SendRequestHistory().execute();
     }
+
 
     // play mp3 song
     public void play(View view) {
@@ -190,7 +152,7 @@ public class MusicPlayer extends CustomMenuActivity {
             duration.setText(String.format("%d:%d", TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining), TimeUnit.MILLISECONDS.toSeconds((long) timeRemaining) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining))));
 
             //repeat yourself that again in 100 miliseconds
-            //durationHandler.postDelayed(this, 100);
+            durationHandler.postDelayed(this, 100);
         }
     };
 
@@ -218,10 +180,8 @@ public class MusicPlayer extends CustomMenuActivity {
         }
     }
     public void deletesong(View view){
-
-
         new AlertDialog.Builder(this)
-                .setTitle("Title")
+                .setTitle("Delete song")
                 .setMessage("Do you want to delete "+currentPlayingSong+"?")
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
@@ -230,8 +190,22 @@ public class MusicPlayer extends CustomMenuActivity {
                         Toast.makeText(MusicPlayer.this, "Deleted", Toast.LENGTH_SHORT).show();
                     }})
                 .setNegativeButton(android.R.string.no, null).show();
-        //new SendRequestDeleteSong().execute();
     }
+
+    public void musicsheet(View view){
+
+        new AlertDialog.Builder(this)
+                .setTitle("Music sheet")
+                .setMessage("Downloading music sheet for song "+currentPlayingSong+"?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        new SendRequestMusicSheet().execute();
+                        Toast.makeText(MusicPlayer.this, "Download", Toast.LENGTH_SHORT).show();
+                    }})
+                .setNegativeButton(android.R.string.no, null).show();
+    }
+
     public  void editname(View view) {
         Button closePopupBtn;
         Button editPopupBtn;
@@ -277,24 +251,8 @@ public class MusicPlayer extends CustomMenuActivity {
         super.onDestroy();
         if (mediaPlayer != null) mediaPlayer.release();
     }
-    public long download(View view){
-        long downloadReference;
-        Uri uri = Uri.parse(currentPlayinglocation);
-        Log.w(TAG, "Song download link"+currentPlayinglocation);
-        // Create request for android download manager
-        downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
-        DownloadManager.Request request = new DownloadManager.Request(uri);
-
-        //Setting title of request
-        request.setTitle(currentPlayingSong);
-
-        //Setting description of request
-        request.setDescription("Song from Wimbo Music");
-        downloadReference = downloadManager.enqueue(request);
-        Log.w(TAG, "Request process");
-
-        return downloadReference;
-
+    public void download(View view){
+        downloadfile(currentPlayinglocation);
     }
 
 
@@ -419,8 +377,8 @@ public class MusicPlayer extends CustomMenuActivity {
             //Clean list view
             lv.setAdapter(null);
             ListAdapter adapter = new SimpleAdapter(MusicPlayer.this, historyList,
-                    R.layout.activity_listview, new String[]{ "song_name","song_id"},
-                    new int[]{ R.id.song_name,R.id.song_id});
+                    R.layout.activity_listview, new String[]{ "song_name"},
+                    new int[]{ R.id.song_name});
 
             //try {
                 //set time in mili
@@ -467,10 +425,6 @@ public class MusicPlayer extends CustomMenuActivity {
         }
 
     }
-
-
-
-
 
 
     public class SendRequestChangeName extends AsyncTask<String, Void, String> {
@@ -645,8 +599,106 @@ public class MusicPlayer extends CustomMenuActivity {
         protected void onPostExecute(String result) {
             //TODO: Add to what happen if to the media if user delete the current one
             new SendRequestHistory().execute();
+        }
+    }
+
+    public class SendRequestMusicSheet extends AsyncTask<String, Void, String> {
+
+        //Parameters:
+        //{
+        //    'songID': <string of the song id from the /history song object>
+        //}
+
+
+        protected void onPreExecute() {
 
         }
+
+        protected String doInBackground(String... arg0) {
+            Log.e(TAG, "Send Request to get music sheet from current song");
+            Log.e(TAG, "Current song Id"+currentPlayingSongID);
+
+
+
+            //Object
+            JSONObject postDataParams = new JSONObject();
+            try {
+                postDataParams.put("songID", currentPlayingSongID);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.e(TAG, "Send object"+postDataParams);
+            try {
+                String request = "http://18.191.144.92/sheet_music";
+                URL url = new URL(request);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setDoOutput(true);
+                conn.setInstanceFollowRedirects(false);
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setUseCaches(false);
+                OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+                wr.write(postDataParams.toString());
+                OutputStream os = conn.getOutputStream();
+                os.write(postDataParams.toString().getBytes(StandardCharsets.UTF_8));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    // Read response
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuffer sb = new StringBuffer();
+                    String line = "";
+                    while ((line = in.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    in.close();
+                    //close the connect
+                    conn.disconnect();
+                    Log.e("Return", sb.toString());
+
+                    return sb.toString();
+
+                } else {
+                    return new String("false : " + responseCode);
+                }
+            } catch (Exception e) {
+                return new String("Exception: " + e.getMessage());
+            }
+        }
+
+
+        //Action take after execute
+        @Override
+        protected void onPostExecute(String result) {
+            HashMap<String, String> myResultInMap = new HashMap<>();
+            try {
+                myResultInMap = jsonToMap(result);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            Log.w(TAG, myResultInMap.get("sheet_location"));
+
+
+            downloadfile(myResultInMap.get("sheet_location"));
+
+        }
+    }
+    protected void downloadfile(String url){
+        long downloadReference;
+        Uri uri = Uri.parse(url);
+        // Create request for android download manager
+        downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+
+        //Setting title of request
+        request.setTitle(currentPlayingSong);
+
+        //Setting description of request
+        request.setDescription("Song from Wimbo Music");
+        downloadReference = downloadManager.enqueue(request);
+        Log.w(TAG, "Request process");
     }
 
     public static void dimBehind(PopupWindow popupWindow) {
