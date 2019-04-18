@@ -29,6 +29,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
@@ -96,8 +98,30 @@ public class MusicPlayer extends CustomMenuActivity {
         profileEmail= songIntent.getStringExtra("profileEmail");
         duration = (TextView) findViewById(R.id.songDuration);
 
+
+
         UpdateViews();
+
+        BottomNavigationView bottomNavigation =
+                (BottomNavigationView) findViewById(R.id.navigation);
+
+        bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                handleBottomNavigationItemSelected(item);
+                return true;
+            }
+        });
     }
+
+    private void handleBottomNavigationItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.Generate:
+                Generate();
+                break;
+        }
+    }
+
 
 
 
@@ -757,18 +781,6 @@ public class MusicPlayer extends CustomMenuActivity {
         p.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         p.dimAmount = 0.3f;
         wm.updateViewLayout(container, p);
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-
-            case R.id.Generate:
-                Generate();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-        //return true;
     }
 
     private void Generate(){
