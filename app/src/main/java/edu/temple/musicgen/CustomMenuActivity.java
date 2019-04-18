@@ -17,9 +17,7 @@ public class CustomMenuActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-                case R.id.SignIn:
-                    SignIn();
-                    return true;
+
                 case R.id.Generate:
                     Generate();
                     return true;
@@ -27,13 +25,6 @@ public class CustomMenuActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
        //return true;
-    }
-
-    private void SignIn(){
-        //Show the about screen
-        Intent myIntent = new Intent(this, SignIn.class);
-        startActivityForResult(myIntent, 0);
-
     }
 
     private void Generate(){

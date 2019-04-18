@@ -33,6 +33,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -96,8 +97,11 @@ public class MusicPlayer extends CustomMenuActivity {
         duration = (TextView) findViewById(R.id.songDuration);
 
         UpdateViews();
-
     }
+
+
+
+
 
     //Update new View for music Player
 
@@ -130,14 +134,40 @@ public class MusicPlayer extends CustomMenuActivity {
     }
 
 
+
     // play mp3 song
     public void play(View view) {
-        media_play_button.setVisibility(View.INVISIBLE);
+       /* media_play_button.setVisibility(View.INVISIBLE);
         media_pause_button.setVisibility(View.VISIBLE);
         mediaPlayer.start();
         timeElapsed = mediaPlayer.getCurrentPosition();
         seekbar.setProgress((int) timeElapsed);
-        durationHandler.postDelayed(updateSeekBarTime, 100);
+        durationHandler.postDelayed(updateSeekBarTime, 100);*/
+
+        media_play_button.setVisibility(View.INVISIBLE);
+        media_pause_button.setVisibility(View.VISIBLE);
+        if(mediaPlayer != null && mediaPlayer.isPlaying()){
+            mediaPlayer.pause();
+        } else if(mediaPlayer != null){
+            mediaPlayer.start();
+            timeElapsed = mediaPlayer.getCurrentPosition();
+            seekbar.setProgress((int) timeElapsed);
+            durationHandler.postDelayed(updateSeekBarTime, 100);
+        }else{
+            mediaPlayer = new MediaPlayer();
+            try {
+                mediaPlayer.setDataSource(currentPlayinglocation);
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+                timeElapsed = mediaPlayer.getCurrentPosition();
+                seekbar.setProgress((int) timeElapsed);
+                durationHandler.postDelayed(updateSeekBarTime, 100);
+
+            } catch (IOException e) {
+                Log.e(TAG, "prepare() failed");
+            }
+        }
+
     }
 
     //handler to change seekBarTime
@@ -160,7 +190,12 @@ public class MusicPlayer extends CustomMenuActivity {
     public void pause(View view) {
         media_play_button.setVisibility(View.VISIBLE);
         media_pause_button.setVisibility(View.INVISIBLE);
-        mediaPlayer.pause();
+
+        if(mediaPlayer.isPlaying()){
+            mediaPlayer.pause();
+        } else {
+            mediaPlayer.start();
+        }
     }
 
     // go forward at forwardTime seconds
@@ -722,5 +757,23 @@ public class MusicPlayer extends CustomMenuActivity {
         p.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         p.dimAmount = 0.3f;
         wm.updateViewLayout(container, p);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.Generate:
+                Generate();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        //return true;
+    }
+
+    private void Generate(){
+        //Do something new
+        Intent myIntent = new Intent(this, GenerateSong.class);
+        startActivityForResult(myIntent, 0);
     }
 }
