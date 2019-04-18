@@ -23,6 +23,7 @@ public class SignIn extends CustomMenuActivity implements
 
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 9001;
+    public static UserInfo userInfo;
 
     private GoogleSignInClient mGoogleSignInClient;
     private TextView mStatusTextView;
@@ -31,6 +32,7 @@ public class SignIn extends CustomMenuActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        userInfo = UserInfo.getInstance();
 
         // Views
         mStatusTextView = findViewById(R.id.status);
@@ -114,6 +116,10 @@ public class SignIn extends CustomMenuActivity implements
 
             String name = account.getDisplayName();
             String profileEmail = account.getEmail();
+
+            userInfo.setUserName(account.getDisplayName());
+            userInfo.setProfileEmail(account.getEmail());
+            userInfo.setProfileID(account.getIdToken());
 
             Log.w(TAG, "First name is"+ name);
             //Start GenerateSong Activity

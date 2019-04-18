@@ -30,6 +30,8 @@ import java.util.Iterator;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import static edu.temple.musicgen.SignIn.userInfo;
+
 public class GenerateSong extends CustomMenuActivity {
     HashMap<String, String> songMap = new HashMap<>();
     String selectedDuration;
@@ -42,16 +44,29 @@ public class GenerateSong extends CustomMenuActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_generate_song);
 
-        Intent myIntent = getIntent();
+
+
+
+
+        //Intent myIntent = getIntent();
         // Get user from the previous activity
         //Sign In Intent
         //profileID: <string of the google profile id>,
         //profileEmail': <string of the google email>
         //userName
         TextView user_name = findViewById(R.id.user_name);
-        userName = myIntent.getStringExtra("userName");
-        profileEmail = myIntent.getStringExtra("profileEmail");
-        profileID = myIntent.getStringExtra("profileID");
+        //userName = myIntent.getStringExtra("userName");
+
+        //userName= userInfo.getUserName();
+        Log.w(TAG, "TEST HERE"+ userInfo.getUserName());
+        userName =userInfo.getUserName();
+        profileEmail =userInfo.getProfileEmail();
+        profileID=userInfo.getProfileID();
+
+        //profileEmail = myIntent.getStringExtra("profileEmail");
+        //profileID = myIntent.getStringExtra("profileID");
+        //profileID= userInfo.getProfileID();
+        //profileEmail=userInfo.getProfileEmail();
         user_name.setText(" Hey there, " + userName);
         //Spinner Genre
         Spinner spinnergenre = findViewById(R.id.genre_spinner);
