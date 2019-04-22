@@ -4,12 +4,16 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -32,7 +36,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import static edu.temple.musicgen.SignIn.userInfo;
 
-public class GenerateSong extends CustomMenuActivity {
+public class GenerateSong extends AppCompatActivity {
     HashMap<String, String> songMap = new HashMap<>();
     String selectedDuration;
     String selectedGenre,selectedTempo;
@@ -46,52 +50,92 @@ public class GenerateSong extends CustomMenuActivity {
 
 
 
-
-
-        //Intent myIntent = getIntent();
-        // Get user from the previous activity
-        //Sign In Intent
-        //profileID: <string of the google profile id>,
-        //profileEmail': <string of the google email>
-        //userName
         TextView user_name = findViewById(R.id.user_name);
-        //userName = myIntent.getStringExtra("userName");
 
-        //userName= userInfo.getUserName();
-        Log.w(TAG, "TEST HERE"+ userInfo.getUserName());
         userName =userInfo.getUserName();
         profileEmail =userInfo.getProfileEmail();
         profileID=userInfo.getProfileID();
 
         //profileEmail = myIntent.getStringExtra("profileEmail");
         //profileID = myIntent.getStringExtra("profileID");
-        //profileID= userInfo.getProfileID();
+         //profileID= userInfo.getProfileID();
         //profileEmail=userInfo.getProfileEmail();
         user_name.setText(" Hey there, " + userName);
         //Spinner Genre
-        Spinner spinnergenre = findViewById(R.id.genre_spinner);
+        final Spinner spinnergenre = findViewById(R.id.genre_spinner);
         ArrayAdapter<CharSequence> genreAdapter = ArrayAdapter.createFromResource(this, R.array.genre, android.R.layout.simple_spinner_item);
         genreAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnergenre.setAdapter(genreAdapter);
 
-        selectedGenre = spinnergenre.getSelectedItem().toString();
-        //Log.w(TAG, "Genre"+ selectedGenre);
+        spinnergenre.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                                       int arg2, long arg3) {
+                // TODO Auto-generated method stub
+                selectedGenre=spinnergenre.getSelectedItem().toString();
+
+                Log.e("Selected item : ",selectedGenre);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+
+            }
+        });
 
 
         //Spinner Tempo
-        Spinner spinnerTempo = findViewById(R.id.tempo_spinner);
+        final Spinner spinnerTempo = findViewById(R.id.tempo_spinner);
         ArrayAdapter<CharSequence> tempoAdapter = ArrayAdapter.createFromResource(this, R.array.tempo, android.R.layout.simple_spinner_item);
         tempoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTempo.setAdapter(tempoAdapter);
 
         selectedTempo = spinnerTempo.getSelectedItem().toString();
+
+        spinnerTempo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                                       int arg2, long arg3) {
+                // TODO Auto-generated method stub
+                selectedTempo = spinnerTempo.getSelectedItem().toString();
+
+                Log.e("Selected item : ",selectedTempo);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
         //Spinner Duration
-        Spinner spinnerDuration = findViewById(R.id.duration_spinner);
+        final Spinner spinnerDuration = findViewById(R.id.duration_spinner);
         ArrayAdapter<CharSequence> durationAdapter = ArrayAdapter.createFromResource(this, R.array.duration, android.R.layout.simple_spinner_item);
         durationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDuration.setAdapter(durationAdapter);
 
-        selectedDuration = spinnerDuration.getSelectedItem().toString();
+        spinnerDuration.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                                       int arg2, long arg3) {
+                // TODO Auto-generated method stub
+                selectedDuration = spinnerDuration.getSelectedItem().toString();
+
+                Log.e("Selected item : ",selectedDuration);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
 
         Button generate_button = findViewById(R.id.generate_button);
         generate_button.setOnClickListener(new View.OnClickListener() {
@@ -100,6 +144,18 @@ public class GenerateSong extends CustomMenuActivity {
             public void onClick(View v) {
                 //Run the API POST request a new song
                 new SendRequest().execute();
+            }
+        });
+
+
+        BottomNavigationView bottomNavigation1 =
+                (BottomNavigationView) findViewById(R.id.navigation1);
+
+        bottomNavigation1.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                handleBottomNavigationItemSelected(item);
+                return true;
             }
         });
     }
@@ -209,7 +265,20 @@ public class GenerateSong extends CustomMenuActivity {
             String value = jObject.getString(key);
             map.put(key, value);
         }
+        Log.w(TAG, map.toString());
         return map;
+    }
+    private void handleBottomNavigationItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.MusicPlayer:
+                MusicPlayer();
+                break;
+        }
+    }
+    private void MusicPlayer(){
+        //Do something new
+        Intent myIntent = new Intent(this, MusicPlayer.class);
+        startActivityForResult(myIntent, 0);
     }
 
 

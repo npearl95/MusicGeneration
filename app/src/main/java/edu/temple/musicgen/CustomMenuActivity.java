@@ -18,7 +18,7 @@ public class CustomMenuActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 
-                case R.id.Generate:
+                case R.id.GenerateNav:
                     Generate();
                     return true;
                     default:

@@ -105,17 +105,8 @@ public class SignIn extends CustomMenuActivity implements
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
-            String profileID = account.getIdToken();
-            Log.w(TAG, "Profile ID is"+ profileID);
-
-
-            //Sign In Intent
-            //profileID: <string of the google profile id>,
-            //profileEmail': <string of the google email>
-            //userName
-
             String name = account.getDisplayName();
-            String profileEmail = account.getEmail();
+
 
             userInfo.setUserName(account.getDisplayName());
             userInfo.setProfileEmail(account.getEmail());
@@ -125,11 +116,9 @@ public class SignIn extends CustomMenuActivity implements
             //Start GenerateSong Activity
             Intent sendData = new Intent(SignIn.this, GenerateSong.class);
             //Intent: email, userName
-            sendData.putExtra("profileEmail", profileEmail);
-            sendData.putExtra("userName", name);
-            sendData.putExtra("profileID", profileID);
-            Log.w(TAG, "Profile Email is"+ profileEmail);
-
+            //sendData.putExtra("profileEmail", profileEmail);
+            //sendData.putExtra("userName", name);
+            //sendData.putExtra("profileID", profileID);
             startActivity(sendData);
 
 
@@ -187,27 +176,12 @@ public class SignIn extends CustomMenuActivity implements
     // [END revokeAccess]
 
     private void updateUI(@Nullable GoogleSignInAccount account) {
-        Log.w(TAG, "updateUI");
-        /*if (account != null) {
-            mStatusTextView.setText(getString(R.string.signed_in_fmt, account.getDisplayName()));
-
-            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
-        } else {
-            mStatusTextView.setText(R.string.signed_out);
-
-            findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
-        }*/
         if (account != null) {
             mStatusTextView.setText(getString(R.string.signed_in_fmt, account.getDisplayName()));
-            //findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            //findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
 
         } else {
             mStatusTextView.setText(R.string.signed_out);
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            ////findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
         }
     }
 
@@ -221,9 +195,6 @@ public class SignIn extends CustomMenuActivity implements
             case R.id.sign_out_button:
                 signOut();
                 break;
-            //case R.id.disconnect_button:
-            //  revokeAccess();
-            //break;
         }
     }
     //Log out from user account when app close but still remember

@@ -4,11 +4,10 @@
 
     <string-array name="genre">
         <item>Folk</item>
-        <item>Jazz</item>
-        <item>Rock</item>
-        <item>Pop</item>
+        <item>Game</item>
         <item>Classical</item>
-        <item>Hip Hop</item>
+        <item>Rock</item>
+        <item>Jazz</item>
     </string-array>
     <string-array name="tempo">
         <item>Slow</item>

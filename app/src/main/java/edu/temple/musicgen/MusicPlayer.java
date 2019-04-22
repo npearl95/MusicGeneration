@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
@@ -58,8 +59,9 @@ import org.json.JSONObject;
 import javax.net.ssl.HttpsURLConnection;
 
 import static edu.temple.musicgen.GenerateSong.jsonToMap;
+import static edu.temple.musicgen.SignIn.userInfo;
 
-public class MusicPlayer extends CustomMenuActivity {
+public class MusicPlayer extends AppCompatActivity {
 
     final static String TAG ="MusicPlayer";
     private MediaPlayer mediaPlayer;
@@ -71,7 +73,7 @@ public class MusicPlayer extends CustomMenuActivity {
     DownloadManager downloadManager;
     Intent songIntent;
     private ListView lv;
-    String profileID, profileEmail, currentPlayinglocation, currentPlayingSong, currentPlayingSongID;
+    String userName, profileID, profileEmail, currentPlayinglocation, currentPlayingSong, currentPlayingSongID;
     PopupWindow popupWindow;
     private String newNamefromUser = "";
     EditText edit;
@@ -83,6 +85,11 @@ public class MusicPlayer extends CustomMenuActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_player);
+
+        userName =userInfo.getUserName();
+        profileEmail =userInfo.getProfileEmail();
+        profileID=userInfo.getProfileID();
+
         songName = findViewById(R.id.songName);
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -93,9 +100,9 @@ public class MusicPlayer extends CustomMenuActivity {
         currentPlayingSong = songIntent.getStringExtra("songName");
         currentPlayinglocation = songIntent.getStringExtra("location");
         currentPlayingSongID = songIntent.getStringExtra("songID");
-        Log.w(TAG, "currentPlayingSongID = songIntent"+currentPlayingSongID);
-        profileID= songIntent.getStringExtra("profileID");
-        profileEmail= songIntent.getStringExtra("profileEmail");
+
+        //profileID= songIntent.getStringExtra("profileID");
+        //profileEmail= songIntent.getStringExtra("profileEmail");
         duration = (TextView) findViewById(R.id.songDuration);
 
 
@@ -103,7 +110,7 @@ public class MusicPlayer extends CustomMenuActivity {
         UpdateViews();
 
         BottomNavigationView bottomNavigation =
-                (BottomNavigationView) findViewById(R.id.navigation);
+                (BottomNavigationView) findViewById(R.id.navigation2);
 
         bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -116,8 +123,11 @@ public class MusicPlayer extends CustomMenuActivity {
 
     private void handleBottomNavigationItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.Generate:
+            case R.id.GenerateNav:
                 Generate();
+                break;
+            case R.id.MusicPlayer:
+                MusicPlayer();
                 break;
         }
     }
@@ -145,7 +155,16 @@ public class MusicPlayer extends CustomMenuActivity {
             Log.w(TAG, "Song's duration"+finalTime);
         } catch (IOException e) {
             e.printStackTrace();
+        }catch (IllegalArgumentException ex) {
+            Log.d(TAG, "create failed:", ex);
+            // fall through
+        } catch (SecurityException ex) {
+            Log.d(TAG, "create failed:", ex);
+            // fall through
         }
+
+
+
         seekbar = findViewById(R.id.seekBar);
         seekbar.setMax((int) finalTime);
         seekbar.setClickable(true);
@@ -786,6 +805,11 @@ public class MusicPlayer extends CustomMenuActivity {
     private void Generate(){
         //Do something new
         Intent myIntent = new Intent(this, GenerateSong.class);
+        startActivityForResult(myIntent, 0);
+    }
+    private void MusicPlayer(){
+        //Do something new
+        Intent myIntent = new Intent(this, MusicPlayer.class);
         startActivityForResult(myIntent, 0);
     }
 }
