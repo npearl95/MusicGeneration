@@ -6,7 +6,6 @@
         <item>Folk</item>
         <item>Game</item>
         <item>Classical</item>
-        <item>Rock</item>
         <item>Jazz</item>
     </string-array>
     <string-array name="tempo">
