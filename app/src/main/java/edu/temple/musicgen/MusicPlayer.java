@@ -152,6 +152,7 @@ public class MusicPlayer extends AppCompatActivity {
             mediaPlayer.setDataSource(currentPlayinglocation);
             mediaPlayer.prepare();
             finalTime = mediaPlayer.getDuration();
+            duration.setText(String.format("%d:%d", TimeUnit.MILLISECONDS.toMinutes((long) finalTime), TimeUnit.MILLISECONDS.toSeconds((long) finalTime) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) finalTime))));
             Log.w(TAG, "Song's duration"+finalTime);
         } catch (IOException e) {
             e.printStackTrace();
@@ -168,7 +169,28 @@ public class MusicPlayer extends AppCompatActivity {
         seekbar = findViewById(R.id.seekBar);
         seekbar.setMax((int) finalTime);
         seekbar.setClickable(true);
+        seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // when user stop moving progress hanlder
+                if (mediaPlayer!=null && mediaPlayer.isPlaying())
+                    //seek to the exact second of the track
+                    mediaPlayer.seekTo(seekBar.getProgress());
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,boolean fromUser) {
+                if (mediaPlayer!=null && fromUser)
+                    //seek to the exact second of the track
+                    mediaPlayer.seekTo((int) progress);
+            }
+        });
 
 
         historyList = new ArrayList<>();
@@ -401,6 +423,7 @@ public class MusicPlayer extends AppCompatActivity {
                                 String songname = c.getString("song_name");
                                 String songlocation = c.getString("location");
                                 String songTimeStamp = c.getString("timestamp");
+                                String genre = c.getString("genre");
 
                                 // tmp hash map for single song
                                 HashMap<String, String> songInfo = new HashMap<>();
@@ -409,6 +432,7 @@ public class MusicPlayer extends AppCompatActivity {
                                 songInfo.put("song_id", songid);
                                 songInfo.put("song_name", songname);
                                 songInfo.put("location", songlocation);
+                                songInfo.put("genre", genre);
                                 //songInfo.put("timestamp", songTimeStamp);
 
                                 // adding contact to contact list
@@ -455,8 +479,8 @@ public class MusicPlayer extends AppCompatActivity {
             //Clean list view
             lv.setAdapter(null);
             ListAdapter adapter = new SimpleAdapter(MusicPlayer.this, historyList,
-                    R.layout.activity_listview, new String[]{ "song_name"},
-                    new int[]{ R.id.song_name});
+                    R.layout.activity_listview, new String[]{ "song_name", "genre"},
+                    new int[]{ R.id.song_name, R.id.song_genre_label});
 
             //try {
                 //set time in mili
